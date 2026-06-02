@@ -22,32 +22,54 @@ const kenBurnsVariants = [
   { initial: { scale: 1, x: 0, y: 0 }, animate: { scale: 1.08, x: 20, y: 12 } },
 ]
 
-function PhotoSlide({ index, photo }: { index: number; photo: PhotoConfig }) {
+function getImagePriority(index: number) {
+  return {
+    loading: index < 3 ? 'eager' : 'lazy',
+    fetchPriority: index === 0 ? 'high' : 'auto',
+  } as const
+}
+
+function PhotoSlide({
+  index,
+  photo,
+  activeIndex,
+}: {
+  index: number
+  photo: PhotoConfig
+  activeIndex: number
+}) {
   const variant = kenBurnsVariants[index % 2]
+  const shouldRenderBackground = Math.abs(index - activeIndex) <= 1
+  const imagePriority = getImagePriority(index)
 
   return (
     <div className="relative h-full w-full flex-shrink-0 snap-center overflow-hidden bg-milk">
       {/* 背景层：模糊填充，防止 object-contain 留白 */}
-      <motion.div
-        className="absolute inset-0"
-        initial={{ ...variant.initial, opacity: 0 }}
-        whileInView={{ ...variant.animate, opacity: 1 }}
-        viewport={{ once: true, amount: 0.5 }}
-        transition={{
-          opacity: { duration: 0.8, ease: 'easeInOut' },
-          scale: { duration: KEN_BURNS_DURATION, ease: 'linear' },
-          x: { duration: KEN_BURNS_DURATION, ease: 'linear' },
-          y: { duration: KEN_BURNS_DURATION, ease: 'linear' },
-        }}
-      >
-        <img
-          src={photo.src}
-          alt=""
-          className="h-full w-full object-cover scale-[1.3] blur-[30px] brightness-[0.7]"
-          style={{ objectPosition: photo.objectPosition ?? 'center' }}
-          draggable={false}
-        />
-      </motion.div>
+      {shouldRenderBackground && (
+        <motion.div
+          className="absolute inset-0"
+          initial={{ ...variant.initial, opacity: 0 }}
+          whileInView={{ ...variant.animate, opacity: 1 }}
+          viewport={{ once: true, amount: 0.5 }}
+          transition={{
+            opacity: { duration: 0.8, ease: 'easeInOut' },
+            scale: { duration: KEN_BURNS_DURATION, ease: 'linear' },
+            x: { duration: KEN_BURNS_DURATION, ease: 'linear' },
+            y: { duration: KEN_BURNS_DURATION, ease: 'linear' },
+          }}
+        >
+          <img
+            src={photo.src}
+            alt=""
+            className="h-full w-full object-cover scale-[1.3] blur-[30px] brightness-[0.7]"
+            style={{ objectPosition: photo.objectPosition ?? 'center' }}
+            loading={imagePriority.loading}
+            fetchPriority={imagePriority.fetchPriority}
+            decoding="async"
+            draggable={false}
+          />
+        </motion.div>
+      )}
 
       {/* 前景层：完整展示，不裁剪 */}
       <motion.div
@@ -62,6 +84,9 @@ function PhotoSlide({ index, photo }: { index: number; photo: PhotoConfig }) {
           alt=""
           className="h-full w-full object-contain"
           style={{ objectPosition: photo.objectPosition ?? 'center' }}
+          loading={imagePriority.loading}
+          fetchPriority={imagePriority.fetchPriority}
+          decoding="async"
           draggable={false}
         />
       </motion.div>
@@ -82,7 +107,7 @@ export function PhotoIntro({ photos }: Props) {
   const [activeIndex, setActiveIndex] = useState(0)
   const scrollRef = useRef<HTMLDivElement>(null)
   const userScrolling = useRef(false)
-  const scrollTimer = useRef<ReturnType<typeof setTimeout>>()
+  const scrollTimer = useRef<ReturnType<typeof setTimeout>>(undefined)
 
   // 监听滚动事件更新当前照片索引
   const handleScroll = useCallback(() => {
@@ -129,7 +154,7 @@ export function PhotoIntro({ photos }: Props) {
       {/* Horizontal scroll-snap container */}
       <div ref={scrollRef} className="flex h-full w-full overflow-x-auto snap-x snap-mandatory">
         {photosToShow.map((photo, index) => (
-          <PhotoSlide key={index} index={index} photo={photo} />
+          <PhotoSlide key={index} index={index} photo={photo} activeIndex={activeIndex} />
         ))}
       </div>
 
