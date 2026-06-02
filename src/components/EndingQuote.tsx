@@ -9,7 +9,6 @@ export function EndingQuote({ className }: Props) {
   const { ref, hasEnteredView } = useSectionInView()
   const mainText = '敢赴山海，追梦星辰'
   const subText = `${className}，未来可期`
-  const footer = `此纪念卡由 ${className} 班制作`
 
   return (
     <div
@@ -40,15 +39,6 @@ export function EndingQuote({ className }: Props) {
         {subText}
       </motion.p>
 
-      {/* 底部署名 */}
-      <motion.p
-        className="text-xs text-warm-gray/50"
-        initial={{ opacity: 0 }}
-        animate={hasEnteredView ? { opacity: 1 } : {}}
-        transition={{ duration: 1, delay: 2.5 }}
-      >
-        {footer}
-      </motion.p>
     </div>
   )
 }

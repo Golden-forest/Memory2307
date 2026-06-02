@@ -4,13 +4,12 @@ import { useSectionInView } from '../hooks/useSectionInView'
 
 interface Props {
   quote: string
-  author: string
 }
 
 /** 每个字出现间隔（毫秒） */
 const CHAR_INTERVAL = 80
 
-export function TeacherMessage({ quote, author }: Props) {
+export function TeacherMessage({ quote }: Props) {
   const [displayedCount, setDisplayedCount] = useState(0)
   const { ref, hasEnteredView } = useSectionInView()
 
@@ -70,16 +69,6 @@ export function TeacherMessage({ quote, author }: Props) {
         </p>
       </div>
 
-      {/* 教师签名 */}
-      <motion.p
-        className="mt-8 text-sm tracking-widest text-warm-gray"
-        initial={{ opacity: 0 }}
-        animate={displayedCount >= quote.length ? { opacity: 1 } : {}}
-        transition={{ duration: 1 }}
-        style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}
-      >
-        —— {author}
-      </motion.p>
     </div>
   )
 }

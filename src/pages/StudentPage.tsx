@@ -51,7 +51,6 @@ export function StudentPage() {
         <section className="h-[100dvh] snap-start snap-always">
           <TeacherMessage
             quote={siteConfig.teacherMessage.quote}
-            author={siteConfig.teacherMessage.author}
           />
         </section>
 
