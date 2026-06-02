@@ -5,7 +5,6 @@ import type { AdmissionLetterConfig } from '../data/config'
 interface Props {
   studentName: string
   config: AdmissionLetterConfig
-  onDone: () => void
 }
 
 /** 信封各阶段时间（毫秒） */
@@ -17,7 +16,6 @@ const TIMELINE = {
   envelopeOut: 500,
   letterCenter: 300,
   contentFade: 2500,
-  doneDelay: 1000,
 }
 
 function getDynamicLines(name: string, config: AdmissionLetterConfig): string[] {
@@ -33,11 +31,14 @@ function getDynamicLines(name: string, config: AdmissionLetterConfig): string[] 
   ]
 }
 
-export function AdmissionLetter({ studentName, config, onDone }: Props) {
+export function AdmissionLetter({ studentName, config }: Props) {
+  const [hasEnteredView, setHasEnteredView] = useState(false)
   const [stage, setStage] = useState<'envelope' | 'opening' | 'letter' | 'content' | 'done'>('envelope')
   const dynamicLines = getDynamicLines(studentName, config)
 
   useEffect(() => {
+    if (!hasEnteredView) return
+
     if (stage === 'envelope') {
       const t = setTimeout(() => setStage('opening'), TIMELINE.envelopeIn + TIMELINE.breathing)
       return () => clearTimeout(t)
@@ -54,14 +55,15 @@ export function AdmissionLetter({ studentName, config, onDone }: Props) {
       const t = setTimeout(() => setStage('done'), TIMELINE.contentFade)
       return () => clearTimeout(t)
     }
-    if (stage === 'done') {
-      const t = setTimeout(onDone, TIMELINE.doneDelay)
-      return () => clearTimeout(t)
-    }
-  }, [stage, onDone])
+  }, [stage, hasEnteredView])
 
   return (
-    <div className="flex h-full w-full items-center justify-center bg-milk">
+    <motion.div
+      className="flex h-full w-full items-center justify-center bg-milk"
+      onViewportEnter={() => {
+        if (!hasEnteredView) setHasEnteredView(true)
+      }}
+    >
       {/* 信封阶段 */}
       {(stage === 'envelope' || stage === 'opening') && (
         <motion.div
@@ -200,6 +202,6 @@ export function AdmissionLetter({ studentName, config, onDone }: Props) {
           </div>
         </motion.div>
       )}
-    </div>
+    </motion.div>
   )
 }

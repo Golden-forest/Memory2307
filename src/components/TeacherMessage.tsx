@@ -1,42 +1,41 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 
 interface Props {
   quote: string
   author: string
-  onDone: () => void
 }
 
 /** 每个字出现间隔（毫秒） */
 const CHAR_INTERVAL = 80
-/** 全部文字显示后到触发 onDone 的等待时间 */
-const DONE_DELAY = 1500
 
-export function TeacherMessage({ quote, author, onDone }: Props) {
+export function TeacherMessage({ quote, author }: Props) {
   const [displayedCount, setDisplayedCount] = useState(0)
-  const doneCalled = useRef(false)
+  const [hasEnteredView, setHasEnteredView] = useState(false)
 
-  // 逐字显示
+  // 逐字显示 - 只在进入视口后启动
   useEffect(() => {
+    if (!hasEnteredView) return
     if (displayedCount < quote.length) {
       const timer = setTimeout(() => {
         setDisplayedCount((c) => c + 1)
       }, CHAR_INTERVAL)
       return () => clearTimeout(timer)
-    } else if (!doneCalled.current) {
-      doneCalled.current = true
-      const timer = setTimeout(onDone, DONE_DELAY)
-      return () => clearTimeout(timer)
     }
-  }, [displayedCount, quote.length, onDone])
+  }, [displayedCount, quote.length, hasEnteredView])
 
   return (
-    <div className="flex h-full w-full flex-col items-center justify-center bg-milk px-10">
+    <motion.div
+      className="flex h-full w-full flex-col items-center justify-center bg-milk px-10"
+      onViewportEnter={() => {
+        if (!hasEnteredView) setHasEnteredView(true)
+      }}
+    >
       {/* 金色引号装饰 */}
       <motion.span
         className="mb-8 text-6xl leading-none text-gold"
         initial={{ opacity: 0, scale: 0.5 }}
-        animate={{ opacity: 1, scale: 1 }}
+        animate={hasEnteredView ? { opacity: 1, scale: 1 } : {}}
         transition={{ duration: 0.8, ease: 'easeOut' }}
         style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}
       >
@@ -82,6 +81,6 @@ export function TeacherMessage({ quote, author, onDone }: Props) {
       >
         —— {author}
       </motion.p>
-    </div>
+    </motion.div>
   )
 }

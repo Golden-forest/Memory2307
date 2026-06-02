@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { lookupStudent } from '../App'
 import { siteConfig } from '../data/config'
 import { PhotoIntro } from '../components/PhotoIntro'
@@ -10,17 +10,16 @@ import { EndingQuote } from '../components/EndingQuote'
 import { ErrorPage } from '../components/ErrorPage'
 import { MusicControl } from '../components/MusicControl'
 
-type Phase = 'blackout' | 'photos' | 'message' | 'letter' | 'ending'
-
 export function StudentPage() {
   const { slug } = useParams<{ slug: string }>()
   const student = slug ? lookupStudent(slug) : undefined
 
-  const [phase, setPhase] = useState<Phase>('blackout')
+  // blackout overlay state
+  const [showBlackout, setShowBlackout] = useState(true)
 
-  // Phase 0: blackout → photos
+  // Phase 0: blackout → reveal content
   useEffect(() => {
-    const timer = setTimeout(() => setPhase('photos'), 500)
+    const timer = setTimeout(() => setShowBlackout(false), 500)
     return () => clearTimeout(timer)
   }, [])
 
@@ -28,78 +27,47 @@ export function StudentPage() {
     return <ErrorPage />
   }
 
-  const handlePhotosDone = () => setPhase('message')
-  const handleMessageDone = () => setPhase('letter')
-  const handleLetterDone = () => setPhase('ending')
-
   return (
     <div className="relative h-[100dvh] w-full overflow-hidden bg-milk">
       <MusicControl />
-      <AnimatePresence mode="wait">
-        {phase === 'blackout' && (
-          <motion.div
-            key="blackout"
-            className="absolute inset-0 z-50 bg-black"
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.5 }}
+
+      {/* Blackout overlay */}
+      {showBlackout && (
+        <motion.div
+          className="absolute inset-0 z-50 bg-black"
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.5 }}
+        />
+      )}
+
+      {/* Vertical scroll-snap container */}
+      <div className="h-[100dvh] overflow-y-auto snap-y snap-mandatory">
+        {/* Section 1: Photos */}
+        <section className="h-[100dvh] snap-start snap-always">
+          <PhotoIntro photos={siteConfig.photos} />
+        </section>
+
+        {/* Section 2: Teacher Message */}
+        <section className="h-[100dvh] snap-start snap-always">
+          <TeacherMessage
+            quote={siteConfig.teacherMessage.quote}
+            author={siteConfig.teacherMessage.author}
           />
-        )}
-        {phase === 'photos' && (
-          <motion.div
-            key="photos"
-            className="absolute inset-0"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0, scale: 1.02 }}
-            transition={{ duration: 0.8 }}
-          >
-            <PhotoIntro photos={siteConfig.photos} onDone={handlePhotosDone} />
-          </motion.div>
-        )}
-        {phase === 'message' && (
-          <motion.div
-            key="message"
-            className="absolute inset-0"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <TeacherMessage
-              quote={siteConfig.teacherMessage.quote}
-              author={siteConfig.teacherMessage.author}
-              onDone={handleMessageDone}
-            />
-          </motion.div>
-        )}
-        {phase === 'letter' && (
-          <motion.div
-            key="letter"
-            className="absolute inset-0"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <AdmissionLetter
-              studentName={student.name}
-              config={siteConfig.admissionLetter}
-              onDone={handleLetterDone}
-            />
-          </motion.div>
-        )}
-        {phase === 'ending' && (
-          <motion.div
-            key="ending"
-            className="absolute inset-0"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 1 }}
-          >
-            <EndingQuote className={siteConfig.className} />
-          </motion.div>
-        )}
-      </AnimatePresence>
+        </section>
+
+        {/* Section 3: Admission Letter */}
+        <section className="h-[100dvh] snap-start snap-always">
+          <AdmissionLetter
+            studentName={student.name}
+            config={siteConfig.admissionLetter}
+          />
+        </section>
+
+        {/* Section 4: Ending */}
+        <section className="h-[100dvh] snap-start snap-always">
+          <EndingQuote className={siteConfig.className} />
+        </section>
+      </div>
     </div>
   )
 }

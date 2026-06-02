@@ -1,96 +1,84 @@
-import { useState, useEffect, useCallback } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import type { PhotoConfig } from '../data/config'
 
 interface Props {
   photos: PhotoConfig[]
-  onDone: () => void
 }
 
-/** 每张照片停留时间（毫秒） */
-const SLIDE_DURATION = 3500
 /** 展示照片数量 */
 const SHOW_COUNT = 10
 
+/** Ken Burns 动画持续时间 */
+const KEN_BURNS_DURATION = 5
+
 const kenBurnsVariants = [
   // 奇数张：向左上缓慢推
-  { initial: { scale: 1, x: 0, y: 0 }, animate: { scale: 1.05, x: -15, y: -10 } },
+  { initial: { scale: 1, x: 0, y: 0 }, animate: { scale: 1.08, x: -20, y: -12 } },
   // 偶数张：向右下缓慢推
-  { initial: { scale: 1, x: 0, y: 0 }, animate: { scale: 1.05, x: 15, y: 10 } },
+  { initial: { scale: 1, x: 0, y: 0 }, animate: { scale: 1.08, x: 20, y: 12 } },
 ]
 
-function PlaceholderPhoto({ index }: { index: number }) {
-  // MVP 阶段：用 CSS 渐变生成不同色调的占位图
-  const hue1 = (index * 37) % 360
-  const hue2 = (hue1 + 30) % 360
-  return (
-    <div
-      className="absolute inset-0"
-      style={{
-        background: `linear-gradient(${135 + index * 15}deg, hsl(${hue1}, 20%, 75%), hsl(${hue2}, 25%, 85%))`,
-      }}
-    />
-  )
-}
-
-function Slide({ index, photo }: { index: number; photo: PhotoConfig }) {
+function PhotoSlide({ index, photo }: { index: number; photo: PhotoConfig }) {
   const variant = kenBurnsVariants[index % 2]
 
   return (
-    <motion.div
-      className="absolute inset-0"
-      initial={{ ...variant.initial, opacity: 0 }}
-      animate={{ ...variant.animate, opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{
-        opacity: { duration: 1, ease: 'easeInOut' },
-        scale: { duration: SLIDE_DURATION / 1000, ease: 'linear' },
-        x: { duration: SLIDE_DURATION / 1000, ease: 'linear' },
-        y: { duration: SLIDE_DURATION / 1000, ease: 'linear' },
-      }}
-    >
-      <div
-        className="h-full w-full"
-        style={{ objectFit: 'cover', objectPosition: photo.objectPosition ?? 'center' }}
+    <div className="relative h-full w-full flex-shrink-0 snap-center overflow-hidden">
+      <motion.div
+        className="absolute inset-0"
+        initial={{ ...variant.initial, opacity: 0 }}
+        whileInView={{ ...variant.animate, opacity: 1 }}
+        viewport={{ once: true, amount: 0.5 }}
+        transition={{
+          opacity: { duration: 0.8, ease: 'easeInOut' },
+          scale: { duration: KEN_BURNS_DURATION, ease: 'linear' },
+          x: { duration: KEN_BURNS_DURATION, ease: 'linear' },
+          y: { duration: KEN_BURNS_DURATION, ease: 'linear' },
+        }}
       >
-        <PlaceholderPhoto index={index} />
-      </div>
+        <img
+          src={photo.src}
+          alt=""
+          className="h-full w-full object-cover"
+          style={{ objectPosition: photo.objectPosition ?? 'center' }}
+          draggable={false}
+        />
+      </motion.div>
+
       {/* 底部渐变遮罩 */}
       <div
-        className="absolute inset-x-0 bottom-0 h-1/3"
+        className="absolute inset-x-0 bottom-0 h-1/3 pointer-events-none"
         style={{
           background: 'linear-gradient(to bottom, transparent, #F5F0EB)',
         }}
       />
-    </motion.div>
+    </div>
   )
 }
 
-export function PhotoIntro({ photos, onDone }: Props) {
-  const [currentIndex, setCurrentIndex] = useState(0)
+export function PhotoIntro({ photos }: Props) {
   const photosToShow = photos.slice(0, SHOW_COUNT)
-
-  const advance = useCallback(() => {
-    setCurrentIndex((prev) => {
-      const next = prev + 1
-      if (next >= photosToShow.length) {
-        setTimeout(onDone, 500)
-        return prev
-      }
-      return next
-    })
-  }, [photosToShow.length, onDone])
-
-  useEffect(() => {
-    const timer = setTimeout(advance, SLIDE_DURATION)
-    return () => clearTimeout(timer)
-  }, [currentIndex, advance])
 
   return (
     <div className="relative h-full w-full overflow-hidden bg-milk">
-      <AnimatePresence>
-        <Slide key={currentIndex} index={currentIndex} photo={photosToShow[currentIndex]} />
-      </AnimatePresence>
+      {/* Horizontal scroll-snap container */}
+      <div className="flex h-full w-full overflow-x-auto snap-x snap-mandatory">
+        {photosToShow.map((photo, index) => (
+          <PhotoSlide key={index} index={index} photo={photo} />
+        ))}
+      </div>
+
+      {/* Photo count indicator (dot pagination) */}
+      <div className="absolute bottom-8 left-1/2 z-10 flex -translate-x-1/2 gap-1.5">
+        {photosToShow.map((_, index) => (
+          <div
+            key={index}
+            className="h-1.5 w-1.5 rounded-full bg-brown/30 transition-colors"
+            style={{
+              backgroundColor: 'rgba(160, 140, 120, 0.3)',
+            }}
+          />
+        ))}
+      </div>
     </div>
   )
 }
