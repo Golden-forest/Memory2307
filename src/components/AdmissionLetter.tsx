@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import type { AdmissionLetterConfig } from '../data/config'
 import { useSectionInView } from '../hooks/useSectionInView'
@@ -33,12 +33,21 @@ function getDynamicLines(name: string, config: AdmissionLetterConfig): string[] 
 }
 
 export function AdmissionLetter({ studentName, config }: Props) {
-  const { ref, hasEnteredView } = useSectionInView()
+  const { ref, isInView } = useSectionInView()
   const [stage, setStage] = useState<'envelope' | 'opening' | 'letter' | 'content' | 'done'>('envelope')
   const dynamicLines = getDynamicLines(studentName, config)
+  const prevInView = useRef(false)
+
+  // 每次进入视口时重置信封动画
+  useEffect(() => {
+    if (isInView && !prevInView.current) {
+      setStage('envelope')
+    }
+    prevInView.current = isInView
+  }, [isInView])
 
   useEffect(() => {
-    if (!hasEnteredView) return
+    if (!isInView) return
 
     if (stage === 'envelope') {
       const t = setTimeout(() => setStage('opening'), TIMELINE.envelopeIn + TIMELINE.breathing)
@@ -56,7 +65,7 @@ export function AdmissionLetter({ studentName, config }: Props) {
       const t = setTimeout(() => setStage('done'), TIMELINE.contentFade)
       return () => clearTimeout(t)
     }
-  }, [stage, hasEnteredView])
+  }, [stage, isInView])
 
   return (
     <div

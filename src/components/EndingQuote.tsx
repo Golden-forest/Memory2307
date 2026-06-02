@@ -6,7 +6,7 @@ interface Props {
 }
 
 export function EndingQuote({ className }: Props) {
-  const { ref, hasEnteredView } = useSectionInView()
+  const { ref, isInView } = useSectionInView()
   const mainText = '敢赴山海，追梦星辰'
   const subText = `${className}，未来可期`
 
@@ -21,7 +21,7 @@ export function EndingQuote({ className }: Props) {
           <motion.span
             key={i}
             initial={{ opacity: 0 }}
-            animate={hasEnteredView ? { opacity: 1 } : {}}
+            animate={isInView ? { opacity: 1 } : { opacity: 0 }}
             transition={{ duration: 0.5, delay: 0.3 + i * 0.15 }}
           >
             {char}
@@ -33,7 +33,7 @@ export function EndingQuote({ className }: Props) {
       <motion.p
         className="mb-12 text-sm tracking-[0.3em] text-warm-gray"
         initial={{ opacity: 0 }}
-        animate={hasEnteredView ? { opacity: 1 } : {}}
+        animate={isInView ? { opacity: 1 } : { opacity: 0 }}
         transition={{ duration: 1, delay: 1.5 }}
       >
         {subText}

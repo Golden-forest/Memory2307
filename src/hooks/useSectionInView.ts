@@ -1,16 +1,14 @@
 import { useState, useEffect, useRef } from 'react'
 
 /**
- * 检测元素是否在 scroll-snap 容器中可见。
+ * 检测元素是否在 scroll-snap 容器中可见（持续追踪）。
  *
- * Framer Motion 的 onViewportEnter 使用 root:null（文档视口），
- * 在 overflow:auto 的 scroll 容器中不可靠（挂载时就误触发）。
- * 此 hook 监听 scroll 容器的 scroll 事件，
- * 用 getBoundingClientRect 检测元素可见性。
+ * 每次元素进入视口返回 isInView=true，离开返回 isInView=false，
+ * 支持动画反复播放。
  */
 export function useSectionInView<T extends HTMLElement = HTMLDivElement>() {
   const ref = useRef<T>(null)
-  const [hasEnteredView, setHasEnteredView] = useState(false)
+  const [isInView, setIsInView] = useState(false)
 
   useEffect(() => {
     const element = ref.current
@@ -23,11 +21,10 @@ export function useSectionInView<T extends HTMLElement = HTMLDivElement>() {
     const check = () => {
       const rect = element.getBoundingClientRect()
       const containerRect = container.getBoundingClientRect()
-      // 元素与容器可视区域有交集
       if (rect.top < containerRect.bottom && rect.bottom > containerRect.top) {
-        setHasEnteredView(true)
-        // 一旦触发，移除监听（只触发一次）
-        container.removeEventListener('scroll', check)
+        setIsInView(true)
+      } else {
+        setIsInView(false)
       }
     }
 
@@ -36,7 +33,7 @@ export function useSectionInView<T extends HTMLElement = HTMLDivElement>() {
     check()
 
     return () => container.removeEventListener('scroll', check)
-  }, []) // 仅挂载时运行一次
+  }, [])
 
-  return { ref, hasEnteredView }
+  return { ref, isInView }
 }

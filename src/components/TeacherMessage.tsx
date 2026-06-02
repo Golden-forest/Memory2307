@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { useSectionInView } from '../hooks/useSectionInView'
 
@@ -11,18 +11,27 @@ const CHAR_INTERVAL = 80
 
 export function TeacherMessage({ quote }: Props) {
   const [displayedCount, setDisplayedCount] = useState(0)
-  const { ref, hasEnteredView } = useSectionInView()
+  const { ref, isInView } = useSectionInView()
+  const prevInView = useRef(false)
 
-  // 逐字显示 - 只在进入视口后启动
+  // 每次进入视口时重置打字进度
   useEffect(() => {
-    if (!hasEnteredView) return
+    if (isInView && !prevInView.current) {
+      setDisplayedCount(0)
+    }
+    prevInView.current = isInView
+  }, [isInView])
+
+  // 逐字显示 - 只在可见时启动
+  useEffect(() => {
+    if (!isInView) return
     if (displayedCount < quote.length) {
       const timer = setTimeout(() => {
         setDisplayedCount((c) => c + 1)
       }, CHAR_INTERVAL)
       return () => clearTimeout(timer)
     }
-  }, [displayedCount, quote.length, hasEnteredView])
+  }, [displayedCount, quote.length, isInView])
 
   return (
     <div
@@ -33,7 +42,7 @@ export function TeacherMessage({ quote }: Props) {
       <motion.span
         className="mb-8 text-6xl leading-none text-gold"
         initial={{ opacity: 0, scale: 0.5 }}
-        animate={hasEnteredView ? { opacity: 1, scale: 1 } : {}}
+        animate={isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.5 }}
         transition={{ duration: 0.8, ease: 'easeOut' }}
         style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}
       >
