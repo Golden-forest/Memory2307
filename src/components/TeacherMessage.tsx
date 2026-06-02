@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
+import { useSectionInView } from '../hooks/useSectionInView'
 
 interface Props {
   quote: string
@@ -11,7 +12,7 @@ const CHAR_INTERVAL = 80
 
 export function TeacherMessage({ quote, author }: Props) {
   const [displayedCount, setDisplayedCount] = useState(0)
-  const [hasEnteredView, setHasEnteredView] = useState(false)
+  const { ref, hasEnteredView } = useSectionInView()
 
   // 逐字显示 - 只在进入视口后启动
   useEffect(() => {
@@ -25,11 +26,9 @@ export function TeacherMessage({ quote, author }: Props) {
   }, [displayedCount, quote.length, hasEnteredView])
 
   return (
-    <motion.div
+    <div
+      ref={ref}
       className="flex h-full w-full flex-col items-center justify-center bg-milk px-10"
-      onViewportEnter={() => {
-        if (!hasEnteredView) setHasEnteredView(true)
-      }}
     >
       {/* 金色引号装饰 */}
       <motion.span
@@ -81,6 +80,6 @@ export function TeacherMessage({ quote, author }: Props) {
       >
         —— {author}
       </motion.p>
-    </motion.div>
+    </div>
   )
 }

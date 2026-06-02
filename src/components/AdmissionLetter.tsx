@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import type { AdmissionLetterConfig } from '../data/config'
+import { useSectionInView } from '../hooks/useSectionInView'
 
 interface Props {
   studentName: string
@@ -32,7 +33,7 @@ function getDynamicLines(name: string, config: AdmissionLetterConfig): string[] 
 }
 
 export function AdmissionLetter({ studentName, config }: Props) {
-  const [hasEnteredView, setHasEnteredView] = useState(false)
+  const { ref, hasEnteredView } = useSectionInView()
   const [stage, setStage] = useState<'envelope' | 'opening' | 'letter' | 'content' | 'done'>('envelope')
   const dynamicLines = getDynamicLines(studentName, config)
 
@@ -58,11 +59,9 @@ export function AdmissionLetter({ studentName, config }: Props) {
   }, [stage, hasEnteredView])
 
   return (
-    <motion.div
+    <div
+      ref={ref}
       className="flex h-full w-full items-center justify-center bg-milk"
-      onViewportEnter={() => {
-        if (!hasEnteredView) setHasEnteredView(true)
-      }}
     >
       {/* 信封阶段 */}
       {(stage === 'envelope' || stage === 'opening') && (
@@ -202,6 +201,6 @@ export function AdmissionLetter({ studentName, config }: Props) {
           </div>
         </motion.div>
       )}
-    </motion.div>
+    </div>
   )
 }

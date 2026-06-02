@@ -1,3 +1,4 @@
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import type { PhotoConfig } from '../data/config'
 
@@ -7,6 +8,9 @@ interface Props {
 
 /** 展示照片数量 */
 const SHOW_COUNT = 10
+
+/** 自动轮播间隔（毫秒） */
+const AUTO_INTERVAL = 3500
 
 /** Ken Burns 动画持续时间 */
 const KEN_BURNS_DURATION = 5
@@ -57,11 +61,55 @@ function PhotoSlide({ index, photo }: { index: number; photo: PhotoConfig }) {
 
 export function PhotoIntro({ photos }: Props) {
   const photosToShow = photos.slice(0, SHOW_COUNT)
+  const [activeIndex, setActiveIndex] = useState(0)
+  const scrollRef = useRef<HTMLDivElement>(null)
+  const userScrolling = useRef(false)
+  const scrollTimer = useRef<ReturnType<typeof setTimeout>>()
+
+  // 监听滚动事件更新当前照片索引
+  const handleScroll = useCallback(() => {
+    const container = scrollRef.current
+    if (!container) return
+
+    userScrolling.current = true
+    clearTimeout(scrollTimer.current)
+    scrollTimer.current = setTimeout(() => {
+      userScrolling.current = false
+    }, 2000)
+
+    const scrollLeft = container.scrollLeft
+    const slideWidth = container.clientWidth
+    const newIndex = Math.round(scrollLeft / slideWidth)
+    setActiveIndex(Math.min(newIndex, photosToShow.length - 1))
+  }, [photosToShow.length])
+
+  useEffect(() => {
+    const container = scrollRef.current
+    if (!container) return
+    container.addEventListener('scroll', handleScroll, { passive: true })
+    return () => container.removeEventListener('scroll', handleScroll)
+  }, [handleScroll])
+
+  // 自动轮播
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (userScrolling.current) return
+      const container = scrollRef.current
+      if (!container) return
+
+      const nextIndex = (activeIndex + 1) % photosToShow.length
+      const slideWidth = container.clientWidth
+      container.scrollTo({ left: slideWidth * nextIndex, behavior: 'smooth' })
+      setActiveIndex(nextIndex)
+    }, AUTO_INTERVAL)
+
+    return () => clearInterval(interval)
+  }, [activeIndex, photosToShow.length])
 
   return (
     <div className="relative h-full w-full overflow-hidden bg-milk">
       {/* Horizontal scroll-snap container */}
-      <div className="flex h-full w-full overflow-x-auto snap-x snap-mandatory">
+      <div ref={scrollRef} className="flex h-full w-full overflow-x-auto snap-x snap-mandatory">
         {photosToShow.map((photo, index) => (
           <PhotoSlide key={index} index={index} photo={photo} />
         ))}
@@ -72,9 +120,12 @@ export function PhotoIntro({ photos }: Props) {
         {photosToShow.map((_, index) => (
           <div
             key={index}
-            className="h-1.5 w-1.5 rounded-full bg-brown/30 transition-colors"
+            className="h-1.5 w-1.5 rounded-full transition-colors duration-300"
             style={{
-              backgroundColor: 'rgba(160, 140, 120, 0.3)',
+              backgroundColor:
+                index === activeIndex
+                  ? 'rgba(160, 140, 120, 0.8)'
+                  : 'rgba(160, 140, 120, 0.3)',
             }}
           />
         ))}

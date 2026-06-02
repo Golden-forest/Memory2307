@@ -1,22 +1,20 @@
-import { useState } from 'react'
 import { motion } from 'framer-motion'
+import { useSectionInView } from '../hooks/useSectionInView'
 
 interface Props {
   className: string
 }
 
 export function EndingQuote({ className }: Props) {
-  const [hasEnteredView, setHasEnteredView] = useState(false)
+  const { ref, hasEnteredView } = useSectionInView()
   const mainText = '敢赴山海，追梦星辰'
   const subText = `${className}，未来可期`
   const footer = `此纪念卡由 ${className} 班制作`
 
   return (
-    <motion.div
+    <div
+      ref={ref}
       className="flex h-full w-full flex-col items-center justify-center px-10"
-      onViewportEnter={() => {
-        if (!hasEnteredView) setHasEnteredView(true)
-      }}
     >
       {/* 主标语逐字淡入 */}
       <div className="mb-6 text-2xl font-light tracking-[0.2em] text-brown">
@@ -51,6 +49,6 @@ export function EndingQuote({ className }: Props) {
       >
         {footer}
       </motion.p>
-    </motion.div>
+    </div>
   )
 }
