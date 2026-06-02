@@ -26,7 +26,8 @@ function PhotoSlide({ index, photo }: { index: number; photo: PhotoConfig }) {
   const variant = kenBurnsVariants[index % 2]
 
   return (
-    <div className="relative h-full w-full flex-shrink-0 snap-center overflow-hidden">
+    <div className="relative h-full w-full flex-shrink-0 snap-center overflow-hidden bg-milk">
+      {/* 背景层：模糊填充，防止 object-contain 留白 */}
       <motion.div
         className="absolute inset-0"
         initial={{ ...variant.initial, opacity: 0 }}
@@ -42,7 +43,24 @@ function PhotoSlide({ index, photo }: { index: number; photo: PhotoConfig }) {
         <img
           src={photo.src}
           alt=""
-          className="h-full w-full object-cover"
+          className="h-full w-full object-cover scale-[1.3] blur-[30px] brightness-[0.7]"
+          style={{ objectPosition: photo.objectPosition ?? 'center' }}
+          draggable={false}
+        />
+      </motion.div>
+
+      {/* 前景层：完整展示，不裁剪 */}
+      <motion.div
+        className="absolute inset-0"
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        viewport={{ once: true, amount: 0.5 }}
+        transition={{ duration: 0.8, ease: 'easeInOut' }}
+      >
+        <img
+          src={photo.src}
+          alt=""
+          className="h-full w-full object-contain"
           style={{ objectPosition: photo.objectPosition ?? 'center' }}
           draggable={false}
         />
@@ -50,7 +68,7 @@ function PhotoSlide({ index, photo }: { index: number; photo: PhotoConfig }) {
 
       {/* 底部渐变遮罩 */}
       <div
-        className="absolute inset-x-0 bottom-0 h-1/3 pointer-events-none"
+        className="absolute inset-x-0 bottom-0 h-1/3 pointer-events-none z-10"
         style={{
           background: 'linear-gradient(to bottom, transparent, #F5F0EB)',
         }}
