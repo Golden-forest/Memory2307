@@ -36,16 +36,6 @@ export function ErrorPage() {
         这张记忆卡还没有被点亮。
       </motion.h1>
 
-      {/* 副文字 */}
-      <motion.p
-        className="mt-4 text-sm text-warm-gray"
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.6 }}
-      >
-        如果你认为这是一个错误，请联系 2307 班同学。
-      </motion.p>
-
       {/* 呼吸动画装饰线 */}
       <motion.div
         className="mt-8 h-px w-16 bg-gold/30"

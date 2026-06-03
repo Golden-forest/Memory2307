@@ -22,11 +22,18 @@ export interface AdmissionLetterConfig {
   date: string
 }
 
+export interface StatsConfig {
+  label: string
+  value: string
+  suffix?: string
+}
+
 export interface SiteConfig {
   className: string
   photos: PhotoConfig[]
   teacherMessage: TeacherMessageConfig
   admissionLetter: AdmissionLetterConfig
+  stats: StatsConfig[]
 }
 
 export const siteConfig: SiteConfig = {
@@ -46,4 +53,10 @@ export const siteConfig: SiteConfig = {
     location: '更辽阔的人生',
     date: '2026年6月',
   },
+  stats: [
+    { label: '位同窗', value: '46', suffix: '' },
+    { label: '天相伴', value: '1095', suffix: '' },
+    { label: '张合照', value: '12', suffix: '' },
+    { label: '份回忆', value: '∞', suffix: '' },
+  ],
 }
