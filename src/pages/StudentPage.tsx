@@ -316,7 +316,7 @@ function MessageBlock({
 }) {
   const reverse = index % 2 === 1
   const sectionTone =
-    index === 1 ? 'bg-paper-soft text-ink' : index === 2 ? 'bg-clay text-ink' : 'bg-paper-soft text-ink'
+    index === 1 ? 'bg-paper-soft text-ink' : 'bg-clay text-ink'
   const labelTone = 'text-muted'
   const paragraphTone = 'text-ink/68'
   const authorTone = 'text-ink/42'
