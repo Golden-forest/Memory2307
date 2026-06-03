@@ -1,14 +1,13 @@
 import { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { lookupStudent } from '../App'
+import { lookupStudent } from '../data/students'
 import { siteConfig } from '../data/config'
 import { PhotoIntro } from '../components/PhotoIntro'
 import { TeacherMessage } from '../components/TeacherMessage'
 import { AdmissionLetter } from '../components/AdmissionLetter'
 import { EndingQuote } from '../components/EndingQuote'
 import { ErrorPage } from '../components/ErrorPage'
-import { MusicControl } from '../components/MusicControl'
 
 export function StudentPage() {
   const { slug } = useParams<{ slug: string }>()
@@ -28,8 +27,7 @@ export function StudentPage() {
   }
 
   return (
-    <div className="relative h-[100dvh] w-full overflow-hidden bg-milk">
-      <MusicControl />
+    <div className="relative h-[100dvh] w-full overflow-hidden bg-[#17120f] noise-overlay">
 
       {/* Blackout overlay */}
       {showBlackout && (
@@ -64,7 +62,7 @@ export function StudentPage() {
 
         {/* Section 4: Ending */}
         <section className="h-[100dvh] snap-start snap-always">
-          <EndingQuote className={siteConfig.className} />
+          <EndingQuote className={siteConfig.className} stats={siteConfig.stats} />
         </section>
       </div>
     </div>
