@@ -275,7 +275,7 @@ function FullColorStatement({ photo }: { photo: PhotoConfig }) {
           <p className="mb-6 text-xs font-medium uppercase tracking-[0.28em] text-paper/50">
             For Tomorrow
           </p>
-          <h2 className="max-w-[10em] text-balance text-[clamp(3.3rem,13vw,9.4rem)] font-black leading-[0.84] tracking-[-0.065em]">
+          <h2 className="max-w-[10em] text-balance text-[clamp(3.3rem,13vw,9.4rem)] font-black leading-[1.05] tracking-[-0.065em]">
             带着这里的温度，去见更远的山海。
           </h2>
           <p className="mt-8 max-w-2xl text-lg leading-[1.85] text-paper/68 sm:text-xl">
@@ -316,10 +316,10 @@ function MessageBlock({
 }) {
   const reverse = index % 2 === 1
   const sectionTone =
-    index === 1 ? 'bg-paper text-ink' : index === 2 ? 'bg-clay text-paper' : 'bg-paper-soft text-ink'
-  const labelTone = index === 2 ? 'text-paper/52' : 'text-muted'
-  const paragraphTone = index === 2 ? 'text-paper/72' : 'text-ink/68'
-  const authorTone = index === 2 ? 'text-paper/46' : 'text-ink/42'
+    index === 1 ? 'bg-paper-soft text-ink' : index === 2 ? 'bg-clay text-ink' : 'bg-paper-soft text-ink'
+  const labelTone = 'text-muted'
+  const paragraphTone = 'text-ink/68'
+  const authorTone = 'text-ink/42'
 
   return (
     <section
@@ -358,7 +358,7 @@ function MessageBlock({
           <p className={`mb-7 text-xs font-medium uppercase tracking-[0.28em] ${labelTone}`}>
             2307 Memory
           </p>
-          <h2 className="max-w-[9em] text-balance text-[clamp(3rem,11.5vw,8.4rem)] font-black leading-[0.84] tracking-[-0.062em]">
+          <h2 className="max-w-[9em] text-balance text-[clamp(3rem,11.5vw,8.4rem)] font-black leading-[1.05] tracking-[-0.062em]">
             {message.title}
           </h2>
           <p className={`mt-8 max-w-[34rem] text-lg leading-[1.9] sm:text-xl ${paragraphTone}`}>
@@ -375,14 +375,14 @@ function ImageGridSection({ photos }: { photos: PhotoConfig[] }) {
   const gridPhotos = photos.slice(0, 8)
 
   return (
-    <section className="bg-paper px-5 py-20 text-ink sm:px-8 sm:py-28 lg:px-12 lg:py-36">
+    <section className="bg-honey px-5 py-20 text-ink sm:px-8 sm:py-28 lg:px-12 lg:py-36">
       <div className="mx-auto max-w-[1360px]">
         <div className="grid gap-8 lg:grid-cols-12 lg:items-end lg:gap-12">
           <ScrollReveal className="lg:col-span-7" parallaxSpeed={-8}>
             <p className="mb-5 text-xs font-medium uppercase tracking-[0.28em] text-muted">
               Photo Essay
             </p>
-            <h2 className="text-balance text-[clamp(3.2rem,13vw,9rem)] font-black leading-[0.84] tracking-[-0.065em]">
+            <h2 className="text-balance text-[clamp(3.2rem,13vw,9rem)] font-black leading-[1.05] tracking-[-0.065em]">
               同窗影像
             </h2>
           </ScrollReveal>
@@ -420,11 +420,11 @@ function ImageGridSection({ photos }: { photos: PhotoConfig[] }) {
 
 function ClosingSection() {
   return (
-    <section data-color-section className="bg-ink px-5 py-20 text-paper sm:px-8 sm:py-28 lg:px-12">
+    <section data-color-section className="bg-olive px-5 py-20 text-paper sm:px-8 sm:py-28 lg:px-12">
       <div className="mx-auto max-w-[1360px]">
         <ScrollReveal className="max-w-5xl" parallaxSpeed={-10}>
           <p className="mb-6 text-xs uppercase tracking-[0.28em] text-paper/48">Class 2307</p>
-          <h2 className="text-balance text-[clamp(3.4rem,16vw,10rem)] font-black leading-[0.85] tracking-[-0.065em]">
+          <h2 className="text-balance text-[clamp(3.4rem,16vw,10rem)] font-black leading-[1.05] tracking-[-0.065em]">
             毕业快乐
           </h2>
           <p className="mt-8 max-w-2xl text-lg leading-[1.85] text-paper/68 sm:text-xl">
