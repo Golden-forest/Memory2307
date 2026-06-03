@@ -10,30 +10,23 @@ export interface PhotoConfig {
   objectPosition?: string
 }
 
-export interface TeacherMessageConfig {
+export interface HeroCopyConfig {
   quote: string
   author: string
 }
 
-export interface AdmissionLetterConfig {
+export interface MessageConfig {
+  title: string
   body: string
-  major: string
-  location: string
-  date: string
-}
-
-export interface StatsConfig {
-  label: string
-  value: string
-  suffix?: string
+  author: string
+  photoIndex: number
 }
 
 export interface SiteConfig {
   className: string
   photos: PhotoConfig[]
-  teacherMessage: TeacherMessageConfig
-  admissionLetter: AdmissionLetterConfig
-  stats: StatsConfig[]
+  hero: HeroCopyConfig
+  messages: MessageConfig[]
 }
 
 export const siteConfig: SiteConfig = {
@@ -43,20 +36,28 @@ export const siteConfig: SiteConfig = {
     alt: `班级合照${i + 1}`,
     objectPosition: 'center',
   })),
-  teacherMessage: {
-    quote: '同学们，毕业不是终点，而是一切伟大故事的序章。愿你们带着这里的温度，走向更远的山海。',
-    author: '×××老师',
+  hero: {
+    quote: '愿你们带着这里的温度，走向更远的山海。',
+    author: '2307 班',
   },
-  admissionLetter: {
-    body: '经 2307 班共同见证，你已被更广阔的未来正式录取。',
-    major: '星辰与山海',
-    location: '更辽阔的人生',
-    date: '2026年6月',
-  },
-  stats: [
-    { label: '位同窗', value: '46', suffix: '' },
-    { label: '天相伴', value: '1095', suffix: '' },
-    { label: '张合照', value: '12', suffix: '' },
-    { label: '份回忆', value: '∞', suffix: '' },
+  messages: [
+    {
+      title: '把青春装进行囊',
+      body: '毕业不是把过去合上，而是终于可以带着这些光，去见更大的世界。',
+      author: '班主任老师',
+      photoIndex: 2,
+    },
+    {
+      title: '谢谢每一次并肩',
+      body: '同一间教室、同一条走廊、同一张合照，会在很久以后提醒我们，曾经这样认真地相遇过。',
+      author: '2307 全体同学',
+      photoIndex: 5,
+    },
+    {
+      title: '向明天出发',
+      body: '愿你们有敢赴山海的勇气，也有在平凡日子里发光的能力。',
+      author: '写给未来的你们',
+      photoIndex: 8,
+    },
   ],
 }

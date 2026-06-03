@@ -1,15 +1,8 @@
-import { motion } from 'framer-motion'
-
 export function ErrorPage() {
   return (
     <div className="flex h-[100dvh] flex-col items-center justify-center bg-milk px-8 text-center">
       {/* 灯泡图标（CSS 绘制） */}
-      <motion.div
-        className="mb-8 flex flex-col items-center"
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.8, ease: 'easeOut' }}
-      >
+      <div className="mb-8 flex animate-[errorIn_800ms_ease-out_both] flex-col items-center">
         {/* 发光效果 */}
         <div
           className="absolute h-20 w-20 rounded-full"
@@ -24,24 +17,15 @@ export function ErrorPage() {
             background: 'linear-gradient(135deg, #C4A265, #D4A84B)',
           }}
         />
-      </motion.div>
+      </div>
 
       {/* 主文字 */}
-      <motion.h1
-        className="text-xl text-brown"
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.3 }}
-      >
+      <h1 className="animate-[errorIn_800ms_180ms_ease-out_both] text-xl text-brown">
         这张记忆卡还没有被点亮。
-      </motion.h1>
+      </h1>
 
       {/* 呼吸动画装饰线 */}
-      <motion.div
-        className="mt-8 h-px w-16 bg-gold/30"
-        animate={{ opacity: [0.3, 0.7, 0.3] }}
-        transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-      />
+      <div className="mt-8 h-px w-16 animate-pulse bg-gold/30" />
     </div>
   )
 }
