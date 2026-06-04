@@ -255,6 +255,7 @@ function PhotoHero({
   studentId: string
 }) {
   const [activeIndex, setActiveIndex] = useState(0)
+  const mediaRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (photos.length <= 1) return
@@ -265,19 +266,48 @@ function PhotoHero({
     return () => window.clearInterval(timer)
   }, [photos.length])
 
+  // Ken Burns zoom: even index zooms in, odd index zooms out
+  useEffect(() => {
+    const container = mediaRef.current
+    if (!container) return
+
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+    if (reduceMotion) return
+
+    const images = container.querySelectorAll<HTMLImageElement>('.hero-slide')
+    const activeImg = images[activeIndex]
+    if (!activeImg) return
+
+    const zoomIn = activeIndex % 2 === 0
+
+    gsap.fromTo(activeImg,
+      { scale: zoomIn ? 1 : 1.08 },
+      {
+        scale: zoomIn ? 1.08 : 1,
+        duration: SLIDE_INTERVAL / 1000,
+        ease: 'power1.out',
+      }
+    )
+
+    return () => {
+      gsap.killTweensOf(images)
+    }
+  }, [activeIndex])
+
   const activePhoto = photos[activeIndex]
 
   return (
     <section className="relative min-h-[100svh] overflow-hidden bg-ink text-paper">
-      <div className="hero-media absolute inset-0" data-parallax data-parallax-speed="30">
+      <div ref={mediaRef} className="hero-media absolute inset-0" data-parallax data-parallax-speed="30">
         {photos.map((photo, index) => (
           <img
             key={photo.src}
             src={photo.src}
             alt={index === activeIndex ? photo.alt : ''}
             className={[
-              'absolute inset-0 h-full w-full object-cover transition-[opacity,transform] duration-[1500ms] ease-[cubic-bezier(0.16,1,0.3,1)]',
-              index === activeIndex ? 'scale-100 opacity-100' : 'scale-[1.045] opacity-0',
+              'hero-slide absolute inset-0 h-full w-full object-cover transition-opacity duration-[1500ms] ease-[cubic-bezier(0.16,1,0.3,1)]',
+              index === activeIndex ? 'opacity-100' : 'opacity-0',
             ].join(' ')}
             style={{ objectPosition: photo.objectPosition ?? 'center' }}
             loading={index < 2 ? 'eager' : 'lazy'}
