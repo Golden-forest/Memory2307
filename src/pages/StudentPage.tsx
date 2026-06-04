@@ -7,7 +7,7 @@ import { lookupStudent } from '../data/students'
 import { siteConfig, type MessageConfig, type PhotoConfig } from '../data/config'
 import { ErrorPage } from '../components/ErrorPage'
 
-const SLIDE_INTERVAL = 4200
+const SLIDE_INTERVAL = 8000
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -266,29 +266,57 @@ function PhotoHero({
     return () => window.clearInterval(timer)
   }, [photos.length])
 
-  // Ken Burns zoom: even index zooms in, odd index zooms out
+  // Ken Burns: portrait photos zoom in/out; landscape photos pan horizontally + subtle zoom
   useEffect(() => {
     const container = mediaRef.current
     if (!container) return
 
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-
     if (reduceMotion) return
 
     const images = container.querySelectorAll<HTMLImageElement>('.hero-slide')
     const activeImg = images[activeIndex]
     if (!activeImg) return
 
-    const zoomIn = activeIndex % 2 === 0
+    const imgW = activeImg.naturalWidth
+    const imgH = activeImg.naturalHeight
+    const containerW = container.clientWidth || window.innerWidth
+    const containerH = container.clientHeight || window.innerHeight
 
-    gsap.fromTo(activeImg,
-      { scale: zoomIn ? 1 : 1.08 },
-      {
-        scale: zoomIn ? 1.08 : 1,
+    // Landscape: image wider than container's aspect ratio → pan + zoom
+    const isLandscape = imgW / imgH > containerW / containerH
+
+    if (isLandscape) {
+      // Pan via object-position: 0% shows left edge, 100% shows right edge
+      // Custom bezier simulates cinematic camera dolly — unified with zoom
+      const panRight = activeIndex % 2 === 0
+      activeImg.style.objectPosition = `${panRight ? 0 : 100}% center`
+      const panEase = 'cubic-bezier(0.25, 0.1, 0.25, 1)'
+      const proxy = { pos: panRight ? 0 : 100 }
+      gsap.to(proxy, {
+        pos: panRight ? 100 : 0,
         duration: SLIDE_INTERVAL / 1000,
-        ease: 'power1.out',
-      }
-    )
+        ease: panEase,
+        onUpdate: () => {
+          activeImg.style.objectPosition = `${proxy.pos}% center`
+        },
+      })
+      gsap.fromTo(activeImg,
+        { scale: 1.04 },
+        { scale: 1.08, duration: SLIDE_INTERVAL / 1000, ease: panEase },
+      )
+    } else {
+      // Portrait: zoom in/out only (existing behavior)
+      const zoomIn = activeIndex % 2 === 0
+      gsap.fromTo(activeImg,
+        { scale: zoomIn ? 1 : 1.08 },
+        {
+          scale: zoomIn ? 1.08 : 1,
+          duration: SLIDE_INTERVAL / 1000,
+          ease: 'power1.out',
+        }
+      )
+    }
 
     return () => {
       gsap.killTweensOf(images)
@@ -478,6 +506,40 @@ function MessageBlock({
 
 function ImageGridSection({ photos }: { photos: PhotoConfig[] }) {
   const gridPhotos = photos.slice(0, 8)
+  const [lightboxSrc, setLightboxSrc] = useState<string | null>(null)
+  const lightboxOverlayRef = useRef<HTMLDivElement>(null)
+  const lightboxImgRef = useRef<HTMLImageElement>(null)
+
+  useEffect(() => {
+    if (lightboxSrc && lightboxOverlayRef.current && lightboxImgRef.current) {
+      gsap.fromTo(
+        lightboxOverlayRef.current,
+        { opacity: 0 },
+        { opacity: 1, duration: 0.3, ease: 'power2.out' },
+      )
+      gsap.fromTo(
+        lightboxImgRef.current,
+        { opacity: 0, scale: 0.92 },
+        { opacity: 1, scale: 1, duration: 0.35, ease: 'power2.out' },
+      )
+    }
+  }, [lightboxSrc])
+
+  const closeLightbox = () => {
+    if (!lightboxOverlayRef.current || !lightboxImgRef.current) return
+    gsap.to(lightboxImgRef.current, {
+      opacity: 0,
+      scale: 0.92,
+      duration: 0.2,
+      ease: 'power2.in',
+    })
+    gsap.to(lightboxOverlayRef.current, {
+      opacity: 0,
+      duration: 0.25,
+      ease: 'power2.in',
+      onComplete: () => setLightboxSrc(null),
+    })
+  }
 
   return (
     <section className="bg-honey px-5 py-20 text-ink sm:px-8 sm:py-28 lg:px-12 lg:py-36">
@@ -508,17 +570,37 @@ function ImageGridSection({ photos }: { photos: PhotoConfig[] }) {
                 <img
                   src={photo.src}
                   alt={photo.alt}
-                  className="aspect-[4/5] w-full object-cover"
+                  className="aspect-[4/5] w-full cursor-pointer object-cover"
                   style={{ objectPosition: photo.objectPosition ?? 'center' }}
                   loading={index < 2 ? 'eager' : 'lazy'}
                   decoding="async"
                   draggable={false}
+                  onClick={() => setLightboxSrc(photo.src)}
                 />
               </div>
             </ScrollReveal>
           ))}
         </div>
       </div>
+
+      {lightboxSrc && (
+        <div
+          ref={lightboxOverlayRef}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90"
+          onClick={closeLightbox}
+          style={{ opacity: 0 }}
+        >
+          <img
+            ref={lightboxImgRef}
+            src={lightboxSrc}
+            alt=""
+            className="max-h-[100svh] max-w-[100vw] object-contain p-4"
+            style={{ opacity: 0 }}
+            draggable={false}
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      )}
     </section>
   )
 }
