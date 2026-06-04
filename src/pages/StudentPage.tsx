@@ -175,12 +175,70 @@ function ScrollReveal({
   )
 }
 
+function StudentIdRoller({ studentId }: { studentId: string }) {
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const container = containerRef.current
+    if (!container) return
+
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const cells = container.querySelectorAll<HTMLDivElement>('[data-digit-cell]')
+
+    if (reduceMotion) {
+      cells.forEach((cell, i) => {
+        const digit = parseInt(studentId[i])
+        const cellHeight = cell.parentElement!.clientHeight
+        cell.style.transform = `translateY(${-digit * cellHeight}px)`
+      })
+      return
+    }
+
+    cells.forEach((cell, i) => {
+      const digit = parseInt(studentId[i])
+      const cellHeight = cell.parentElement!.clientHeight
+
+      const randomDigit = Math.floor(Math.random() * 10)
+      cell.style.transform = `translateY(${-randomDigit * cellHeight}px)`
+
+      gsap.to(cell, {
+        y: -digit * cellHeight,
+        duration: 2,
+        delay: i * 0.08,
+        ease: 'power3.out',
+      })
+    })
+  }, [studentId])
+
+  return (
+    <div ref={containerRef} className="flex items-center justify-center gap-[0.02em]">
+      {studentId.split('').map((_char, i) => (
+        <div key={i} className="inline-flex flex-col items-center" style={{ height: '1em', overflow: 'hidden' }}>
+          <div
+            data-digit-cell
+            className="flex flex-col"
+            style={{ willChange: 'transform' }}
+          >
+            {[0,1,2,3,4,5,6,7,8,9].map(d => (
+              <span key={d} className="flex items-center justify-center" style={{ height: '1em', lineHeight: '1' }}>
+                {d}
+              </span>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
 function PhotoHero({
-  className,
   photos,
+  studentName,
+  studentId,
 }: {
-  className: string
   photos: PhotoConfig[]
+  studentName: string
+  studentId: string
 }) {
   const [activeIndex, setActiveIndex] = useState(0)
 
@@ -229,8 +287,11 @@ function PhotoHero({
             Class Memory
           </p>
           <h1 className="hero-intro text-[clamp(4.4rem,29vw,14rem)] font-black leading-[0.78] tracking-[-0.06em] [animation-delay:120ms]">
-            {className}
+            {studentName}
           </h1>
+          <div className="hero-intro mt-4 text-[clamp(1.4rem,6vw,4.2rem)] font-mono tracking-[0.18em] text-paper/60 [animation-delay:300ms]">
+            <StudentIdRoller studentId={studentId} />
+          </div>
           <p className="hero-intro mt-7 max-w-[12em] text-[clamp(2.1rem,10.5vw,6.8rem)] font-black leading-[0.95] tracking-[-0.055em] text-paper/94 [animation-delay:220ms]">
             愿每一次回望，
             <span className="block">都有青春正在发光。</span>
@@ -418,14 +479,14 @@ function ImageGridSection({ photos }: { photos: PhotoConfig[] }) {
   )
 }
 
-function ClosingSection() {
+function ClosingSection({ studentName }: { studentName: string }) {
   return (
     <section data-color-section className="bg-olive px-5 py-20 text-paper sm:px-8 sm:py-28 lg:px-12">
       <div className="mx-auto max-w-[1360px]">
         <ScrollReveal className="max-w-5xl" parallaxSpeed={-10}>
           <p className="mb-6 text-xs uppercase tracking-[0.28em] text-paper/48">Class 2307</p>
           <h2 className="text-balance text-[clamp(3.4rem,16vw,10rem)] font-black leading-[1.05] tracking-[-0.065em]">
-            毕业快乐
+            祝 {studentName} 毕业快乐
           </h2>
           <p className="mt-8 max-w-2xl text-lg leading-[1.85] text-paper/68 sm:text-xl">
             愿你们在不同的城市、不同的清晨里，依然记得这一段明亮的同窗时光。
@@ -449,7 +510,7 @@ export function StudentPage() {
 
   return (
     <main ref={pageRef} className="min-h-[100dvh] overflow-hidden bg-paper">
-      <PhotoHero className={siteConfig.className} photos={siteConfig.photos.slice(0, 8)} />
+      <PhotoHero photos={siteConfig.photos.slice(0, 8)} studentName={student.name} studentId={student.studentId ?? ''} />
       <MessageBlock
         message={siteConfig.messages[0]}
         photo={siteConfig.photos[siteConfig.messages[0].photoIndex] ?? siteConfig.photos[0]}
@@ -467,7 +528,7 @@ export function StudentPage() {
         photo={siteConfig.photos[siteConfig.messages[2].photoIndex] ?? siteConfig.photos[2]}
         index={2}
       />
-      <ClosingSection />
+      <ClosingSection studentName={student.name} />
     </main>
   )
 }

@@ -1,6 +1,7 @@
 export interface Student {
   slug: string
   name: string
+  studentId: string
 }
 
 export interface PhotoConfig {
