@@ -184,30 +184,44 @@ function StudentIdRoller({ studentId }: { studentId: string }) {
 
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     const cells = container.querySelectorAll<HTMLDivElement>('[data-digit-cell]')
+    const cellElements = Array.from(cells)
 
     if (reduceMotion) {
-      cells.forEach((cell, i) => {
+      cellElements.forEach((cell, i) => {
         const digit = parseInt(studentId[i])
         const cellHeight = cell.parentElement!.clientHeight
-        cell.style.transform = `translateY(${-digit * cellHeight}px)`
+        gsap.set(cell, { yPercent: 0, y: 0 })
+        gsap.set(cell, { y: -digit * cellHeight })
       })
       return
     }
 
-    cells.forEach((cell, i) => {
+    cellElements.forEach((cell, i) => {
       const digit = parseInt(studentId[i])
       const cellHeight = cell.parentElement!.clientHeight
 
       const randomDigit = Math.floor(Math.random() * 10)
-      cell.style.transform = `translateY(${-randomDigit * cellHeight}px)`
 
-      gsap.to(cell, {
-        y: -digit * cellHeight,
-        duration: 2,
-        delay: i * 0.08,
-        ease: 'power3.out',
-      })
+      gsap.set(cell, { yPercent: 0, y: 0 })
+      gsap.fromTo(cell,
+        { y: -randomDigit * cellHeight },
+        {
+          y: -digit * cellHeight,
+          duration: 2,
+          delay: i * 0.08,
+          ease: 'power3.out',
+          scrollTrigger: {
+            trigger: container,
+            start: 'top 85%',
+            toggleActions: 'play reverse play none',
+          },
+        }
+      )
     })
+
+    return () => {
+      gsap.killTweensOf(cellElements)
+    }
   }, [studentId])
 
   return (
