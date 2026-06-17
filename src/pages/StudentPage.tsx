@@ -381,7 +381,7 @@ function PhotoHero({
             className="flex items-center gap-2"
             aria-label={`当前照片：${activePhoto?.alt ?? ''}`}
           >
-            {photos.slice(0, 8).map((photo, index) => (
+            {photos.slice(0, 12).map((photo, index) => (
               <button
                 key={photo.src}
                 type="button"
@@ -505,7 +505,7 @@ function MessageBlock({
 }
 
 function ImageGridSection({ photos }: { photos: PhotoConfig[] }) {
-  const gridPhotos = photos.slice(0, 8)
+  const gridPhotos = photos.slice(0, 12)
   const [lightboxSrc, setLightboxSrc] = useState<string | null>(null)
   const lightboxOverlayRef = useRef<HTMLDivElement>(null)
   const lightboxImgRef = useRef<HTMLImageElement>(null)
@@ -636,13 +636,13 @@ export function StudentPage() {
 
   return (
     <main ref={pageRef} className="min-h-[100dvh] overflow-hidden bg-paper">
-      <PhotoHero photos={siteConfig.photos.slice(0, 8)} studentName={student.name} studentId={student.studentId ?? ''} />
+      <PhotoHero photos={siteConfig.photos.slice(0, 12)} studentName={student.name} studentId={student.studentId ?? ''} />
       <MessageBlock
         message={siteConfig.messages[0]}
         photo={siteConfig.photos[siteConfig.messages[0].photoIndex] ?? siteConfig.photos[0]}
         index={0}
       />
-      <FullColorStatement photo={siteConfig.photos[4]} />
+      <FullColorStatement photo={siteConfig.photos[6]} />
       <MessageBlock
         message={siteConfig.messages[1]}
         photo={siteConfig.photos[siteConfig.messages[1].photoIndex] ?? siteConfig.photos[1]}

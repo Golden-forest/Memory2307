@@ -52,13 +52,13 @@ export const siteConfig: SiteConfig = {
       title: '谢谢每一次并肩',
       body: '同一间教室、同一条走廊、同一张合照，会在很久以后提醒我们，曾经这样认真地相遇过。',
       author: '2307 全体同学',
-      photoIndex: 5,
+      photoIndex: 7,
     },
     {
       title: '向明天出发',
       body: '愿你们有敢赴山海的勇气，也有在平凡日子里发光的能力。',
       author: '写给未来的你们',
-      photoIndex: 8,
+      photoIndex: 7,
     },
   ],
 }
