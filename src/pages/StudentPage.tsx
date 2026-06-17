@@ -351,12 +351,12 @@ function PhotoHero({
       <div className="relative z-10 mx-auto flex min-h-[100svh] w-full max-w-[1440px] flex-col justify-between px-5 pb-8 pt-5 sm:px-8 sm:pb-10 sm:pt-8 lg:px-12">
         <header className="flex items-center justify-between text-paper">
           <div className="text-sm font-semibold tracking-[0.18em] sm:text-base">2307</div>
-          <div className="text-xs uppercase tracking-[0.24em] text-paper/70">Graduation</div>
+          <div className="text-xs uppercase tracking-[0.24em] text-paper/70">Graduation 2026</div>
         </header>
 
         <div className="max-w-[980px] pb-5 sm:pb-10">
           <p className="hero-intro mb-4 text-xs uppercase tracking-[0.28em] text-paper/72">
-            Class Memory
+            Class 2307
           </p>
           <h1 className="hero-intro text-[clamp(4.4rem,29vw,14rem)] font-black leading-[0.78] tracking-[-0.06em] [animation-delay:120ms]">
             {studentName}
@@ -365,17 +365,19 @@ function PhotoHero({
             <StudentIdRoller studentId={studentId} />
           </div>
           <p className="hero-intro mt-7 max-w-[12em] text-[clamp(2.1rem,10.5vw,6.8rem)] font-black leading-[0.95] tracking-[-0.055em] text-paper/94 [animation-delay:220ms]">
-            愿每一次回望，
-            <span className="block">都有青春正在发光。</span>
+            这一程，
+            <span className="block">我们并肩走过</span>
           </p>
         </div>
 
         <div className="grid gap-5 border-t border-paper/22 pt-5 sm:grid-cols-[minmax(0,34rem)_auto] sm:items-end sm:justify-between">
           <p className="max-w-xl text-sm leading-[1.85] text-paper/76 sm:text-base">
             {siteConfig.hero.quote}
-            <span className="mt-2 block text-xs uppercase tracking-[0.22em] text-paper/48">
-              {siteConfig.hero.author}
-            </span>
+            {siteConfig.hero.author && (
+              <span className="mt-2 block text-xs uppercase tracking-[0.22em] text-paper/48">
+                {siteConfig.hero.author}
+              </span>
+            )}
           </p>
           <div
             className="flex items-center gap-2"
@@ -406,13 +408,13 @@ function FullColorStatement({ photo }: { photo: PhotoConfig }) {
       <div className="mx-auto grid max-w-[1360px] items-center gap-10 lg:grid-cols-12 lg:gap-12">
         <ScrollReveal className="lg:col-span-7" parallaxSpeed={-8}>
           <p className="mb-6 text-xs font-medium uppercase tracking-[0.28em] text-paper/50">
-            For Tomorrow
+            To 2307
           </p>
           <h2 className="max-w-[10em] text-balance text-[clamp(3.3rem,13vw,9.4rem)] font-black leading-[1.05] tracking-[-0.065em]">
             带着这里的温度，去见更远的山海。
           </h2>
           <p className="mt-8 max-w-2xl text-lg leading-[1.85] text-paper/68 sm:text-xl">
-            不需要把青春说得很满。几张合照，几句祝福，就足够让这个夏天停留得更久一些。
+            那些一起熬过的夜、刷过的题、流过的汗，都会在很多年后，变成你想起青春时最亮的证据。
           </p>
         </ScrollReveal>
 
@@ -497,7 +499,9 @@ function MessageBlock({
           <p className={`mt-8 max-w-[34rem] text-lg leading-[1.9] sm:text-xl ${paragraphTone}`}>
             {message.body}
           </p>
-          <p className={`mt-10 text-sm tracking-[0.2em] ${authorTone}`}>{message.author}</p>
+          {message.author && (
+            <p className={`mt-10 text-sm tracking-[0.2em] ${authorTone}`}>{message.author}</p>
+          )}
         </ScrollReveal>
       </div>
     </section>
@@ -554,7 +558,7 @@ function ImageGridSection({ photos }: { photos: PhotoConfig[] }) {
             </h2>
           </ScrollReveal>
           <ScrollReveal className="max-w-xl text-lg leading-[1.85] text-ink/62 sm:text-xl lg:col-span-4 lg:col-start-9">
-            用统一的节奏展示这些照片，让合照成为页面真正的主角。
+            有些话来不及一一说出口，就交给这些照片替我们记住。
           </ScrollReveal>
         </div>
 
@@ -606,17 +610,108 @@ function ImageGridSection({ photos }: { photos: PhotoConfig[] }) {
 }
 
 function ClosingSection({ studentName }: { studentName: string }) {
+  const sectionRef = useRef<HTMLElement>(null)
+  const wrapperRef = useRef<HTMLDivElement>(null)
+  const hasAnimated = useRef(false)
+
+  const titleText = `${studentName} 毕业快乐`
+  const bodyLines = ['此去', '繁花似锦', '2307的战友们', '再会']
+
+  useEffect(() => {
+    const section = sectionRef.current
+    if (!section || hasAnimated.current) return
+
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const wrapper = wrapperRef.current
+    if (!wrapper) return
+
+    if (reduceMotion) {
+      gsap.set(wrapper.querySelectorAll('[data-char]'), { autoAlpha: 1 })
+      return
+    }
+
+    // Web Audio typewriter click
+    let audioCtx: AudioContext | null = null
+    const playClick = () => {
+      if (!audioCtx) audioCtx = new AudioContext()
+      if (audioCtx.state === 'suspended') audioCtx.resume()
+      const oscillator = audioCtx.createOscillator()
+      const gain = audioCtx.createGain()
+      oscillator.type = 'square'
+      oscillator.frequency.setValueAtTime(800 + Math.random() * 400, audioCtx.currentTime)
+      gain.gain.setValueAtTime(0.03, audioCtx.currentTime)
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.04)
+      oscillator.connect(gain)
+      gain.connect(audioCtx.destination)
+      oscillator.start(audioCtx.currentTime)
+      oscillator.stop(audioCtx.currentTime + 0.04)
+    }
+
+    // Collect all chars in DOM order
+    const allChars = Array.from(wrapper.querySelectorAll<HTMLSpanElement>('[data-char]'))
+    const cursor = wrapper.querySelector('[data-cursor]')
+
+    // Hide all chars initially
+    gsap.set(allChars, { autoAlpha: 0 })
+    if (cursor) gsap.set(cursor, { autoAlpha: 1 })
+
+    // Build timeline: each char appears sequentially
+    const charDelay = 0.12
+    const tl = gsap.timeline({
+      scrollTrigger: {
+        trigger: section,
+        start: 'top 70%',
+        toggleActions: 'play none none none',
+        onEnter: () => { hasAnimated.current = true },
+      },
+    })
+
+    allChars.forEach((char, i) => {
+      tl.to(char, {
+        autoAlpha: 1,
+        duration: 0.01,
+        onStart: playClick,
+      }, i * charDelay)
+    })
+
+    // Fade out cursor at the end
+    if (cursor) {
+      tl.to(cursor, { autoAlpha: 0, duration: 0.3 }, `>-=0.1`)
+    }
+
+    return () => {
+      tl.kill()
+      audioCtx?.close()
+    }
+  }, [studentName])
+
   return (
-    <section data-color-section className="bg-olive px-5 py-20 text-paper sm:px-8 sm:py-28 lg:px-12">
+    <section ref={sectionRef} data-color-section className="bg-olive px-5 py-20 text-paper sm:px-8 sm:py-28 lg:px-12">
       <div className="mx-auto max-w-[1360px]">
         <ScrollReveal className="max-w-5xl" parallaxSpeed={-10}>
           <p className="mb-6 text-xs uppercase tracking-[0.28em] text-paper/48">Class 2307</p>
-          <h2 className="text-balance text-[clamp(3.4rem,16vw,10rem)] font-black leading-[1.05] tracking-[-0.065em]">
-            祝 {studentName} 毕业快乐
-          </h2>
-          <p className="mt-8 max-w-2xl text-lg leading-[1.85] text-paper/68 sm:text-xl">
-            愿你们在不同的城市、不同的清晨里，依然记得这一段明亮的同窗时光。
-          </p>
+          <div ref={wrapperRef}>
+            {/* Title - nowrap so it stays on one line */}
+            <div className="whitespace-nowrap text-[clamp(1.8rem,6vw,3.6rem)] font-black leading-[1.15] tracking-[-0.03em] text-paper">
+              {titleText.split('').map((ch, i) => (
+                <span key={`t-${i}`} data-char>{ch === ' ' ? '\u00A0' : ch}</span>
+              ))}
+            </div>
+
+            {/* Body - poem lines, left-aligned */}
+            <div className="mt-10 text-[clamp(1.4rem,4.5vw,2.8rem)] font-semibold leading-[2] tracking-[-0.02em] text-paper/80">
+              {bodyLines.map((line, li) => (
+                <div key={li} className="leading-[2.2]">
+                  {line.split('').map((ch, ci) => (
+                    <span key={`b-${li}-${ci}`} data-char>{ch === ' ' ? '\u00A0' : ch}</span>
+                  ))}
+                </div>
+              ))}
+            </div>
+
+            {/* Cursor */}
+            <span data-cursor className="inline-block w-[2px] h-[1.1em] bg-paper/80 ml-0.5 align-middle" />
+          </div>
         </ScrollReveal>
       </div>
     </section>

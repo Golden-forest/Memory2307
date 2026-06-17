@@ -39,19 +39,19 @@ export const siteConfig: SiteConfig = {
   })),
   hero: {
     quote: '愿你们带着这里的温度，走向更远的山海。',
-    author: '2307 班',
+    author: '',
   },
   messages: [
     {
       title: '把青春装进行囊',
       body: '毕业不是把过去合上，而是终于可以带着这些光，去见更大的世界。',
-      author: '班主任老师',
+      author: '',
       photoIndex: 2,
     },
     {
       title: '谢谢每一次并肩',
       body: '同一间教室、同一条走廊、同一张合照，会在很久以后提醒我们，曾经这样认真地相遇过。',
-      author: '2307 全体同学',
+      author: '',
       photoIndex: 7,
     },
     {
