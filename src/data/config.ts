@@ -23,11 +23,16 @@ export interface MessageConfig {
   photoIndex: number
 }
 
+export interface ClosingConfig {
+  lines: string[]
+}
+
 export interface SiteConfig {
   className: string
   photos: PhotoConfig[]
   hero: HeroCopyConfig
   messages: MessageConfig[]
+  closing: ClosingConfig
 }
 
 export const siteConfig: SiteConfig = {
@@ -61,4 +66,7 @@ export const siteConfig: SiteConfig = {
       photoIndex: 7,
     },
   ],
+  closing: {
+    lines: ['此去', '繁花似锦', '2307的战友们', '再会'],
+  },
 }

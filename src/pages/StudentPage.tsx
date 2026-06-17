@@ -611,110 +611,210 @@ function ImageGridSection({ photos }: { photos: PhotoConfig[] }) {
 
 function ClosingSection({ studentName }: { studentName: string }) {
   const sectionRef = useRef<HTMLElement>(null)
-  const wrapperRef = useRef<HTMLDivElement>(null)
-  const hasAnimated = useRef(false)
+  const spacerRef = useRef<HTMLDivElement>(null)
+  const lineRefs = useRef<(HTMLDivElement | null)[]>([])
+  const tlRef = useRef<gsap.core.Timeline | null>(null)
 
   const titleText = `${studentName} 毕业快乐`
-  const bodyLines = ['此去', '繁花似锦', '2307的战友们', '再会']
+  const poemLines = siteConfig.closing.lines
 
   useEffect(() => {
     const section = sectionRef.current
-    if (!section || hasAnimated.current) return
+    if (!section) return
+
+    const lines = lineRefs.current.filter(Boolean) as HTMLDivElement[]
+    if (lines.length === 0) return
 
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    const wrapper = wrapperRef.current
-    if (!wrapper) return
-
     if (reduceMotion) {
-      gsap.set(wrapper.querySelectorAll('[data-char]'), { autoAlpha: 1 })
+      gsap.set(lines, { opacity: 1, y: 0, filter: 'blur(0px)' })
       return
     }
 
-    // Web Audio typewriter click
-    let audioCtx: AudioContext | null = null
-    const playClick = () => {
-      if (!audioCtx) audioCtx = new AudioContext()
-      if (audioCtx.state === 'suspended') audioCtx.resume()
-      const oscillator = audioCtx.createOscillator()
-      const gain = audioCtx.createGain()
-      oscillator.type = 'square'
-      oscillator.frequency.setValueAtTime(800 + Math.random() * 400, audioCtx.currentTime)
-      gain.gain.setValueAtTime(0.03, audioCtx.currentTime)
-      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.04)
-      oscillator.connect(gain)
-      gain.connect(audioCtx.destination)
-      oscillator.start(audioCtx.currentTime)
-      oscillator.stop(audioCtx.currentTime + 0.04)
+    // Set initial state
+    gsap.set(lines, { opacity: 0, y: 18, filter: 'blur(8px)' })
+
+    let isPinned = false
+    const sectionHeight = section.offsetHeight
+    const spacer = spacerRef.current
+
+    // Pin the section: fixed positioning so animation plays while user sees it
+    const pin = () => {
+      if (isPinned) return
+      isPinned = true
+      section.style.position = 'fixed'
+      section.style.top = '0'
+      section.style.left = '0'
+      section.style.right = '0'
+      section.style.width = '100%'
+      section.style.zIndex = '50'
+      if (spacer) {
+        spacer.style.height = `${sectionHeight}px`
+      }
     }
 
-    // Collect all chars in DOM order
-    const allChars = Array.from(wrapper.querySelectorAll<HTMLSpanElement>('[data-char]'))
-    const cursor = wrapper.querySelector('[data-cursor]')
+    // Unpin: release so user can scroll freely
+    const unpin = () => {
+      if (!isPinned) return
+      isPinned = false
+      section.style.position = ''
+      section.style.top = ''
+      section.style.left = ''
+      section.style.right = ''
+      section.style.width = ''
+      section.style.zIndex = ''
+      if (spacer) {
+        spacer.style.height = '0'
+      }
+    }
 
-    // Hide all chars initially
-    gsap.set(allChars, { autoAlpha: 0 })
-    if (cursor) gsap.set(cursor, { autoAlpha: 1 })
+    const playAnimation = () => {
+      pin()
+      // Kill previous timeline if any
+      tlRef.current?.kill()
 
-    // Build timeline: each char appears sequentially
-    const charDelay = 0.12
-    const tl = gsap.timeline({
-      scrollTrigger: {
-        trigger: section,
-        start: 'top 70%',
-        toggleActions: 'play none none none',
-        onEnter: () => { hasAnimated.current = true },
+      // Reset all lines to hidden
+      gsap.set(lines, { opacity: 0, y: 18, filter: 'blur(8px)' })
+
+      const tl = gsap.timeline({
+        onComplete: () => {
+          // Animation done — unpin so user can scroll freely
+          unpin()
+        },
+      })
+      tlRef.current = tl
+
+      // === Breathing pause (0.5s) ===
+      tl.to({}, { duration: 0.5 })
+
+      // Line 0: {name} 毕业快乐 — 0.8s fade in, 0.6s hold
+      tl.to(lines[0], {
+        opacity: 1, y: 0, filter: 'blur(0px)',
+        duration: 0.8, ease: 'power2.out',
+      })
+      tl.to({}, { duration: 0.6 })
+
+      // Line 1: 此去 — 0.8s fade in, 0.5s hold
+      tl.to(lines[1], {
+        opacity: 1, y: 0, filter: 'blur(0px)',
+        duration: 0.8, ease: 'power2.out',
+      })
+      tl.to({}, { duration: 0.5 })
+
+      // Line 2: 繁花似锦 — 0.9s fade in (slightly longer for emphasis), 0.7s hold
+      tl.to(lines[2], {
+        opacity: 1, y: 0, filter: 'blur(0px)',
+        duration: 0.9, ease: 'power2.out',
+      })
+      tl.to({}, { duration: 0.7 })
+
+      // Line 3: 2307的战友们 — 0.8s fade in, 0.5s hold
+      tl.to(lines[3], {
+        opacity: 1, y: 0, filter: 'blur(0px)',
+        duration: 0.8, ease: 'power2.out',
+      })
+      tl.to({}, { duration: 0.5 })
+
+      // Line 4: 再会 — 0.8s fade in, 0.8s hold
+      tl.to(lines[4], {
+        opacity: 1, y: 0, filter: 'blur(0px)',
+        duration: 0.8, ease: 'power2.out',
+      })
+      tl.to({}, { duration: 0.8 })
+
+      // Fade out lines 0–3 (1.2s), then unpin
+      tl.to(lines.slice(0, 4), {
+        opacity: 0,
+        y: -4,
+        duration: 1.2,
+        ease: 'power2.inOut',
+        stagger: 0.12,
+      })
+
+      // Line 4 (再会) stays visible as normal page content
+    }
+
+    // Use IntersectionObserver to detect when section enters viewport
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            playAnimation()
+          }
+        }
       },
-    })
-
-    allChars.forEach((char, i) => {
-      tl.to(char, {
-        autoAlpha: 1,
-        duration: 0.01,
-        onStart: playClick,
-      }, i * charDelay)
-    })
-
-    // Fade out cursor at the end
-    if (cursor) {
-      tl.to(cursor, { autoAlpha: 0, duration: 0.3 }, `>-=0.1`)
-    }
+      { threshold: 0.1 }
+    )
+    observer.observe(section)
 
     return () => {
-      tl.kill()
-      audioCtx?.close()
+      observer.disconnect()
+      tlRef.current?.kill()
+      unpin()
+      gsap.set(lines, { clearProps: 'all' })
     }
   }, [studentName])
 
   return (
-    <section ref={sectionRef} data-color-section className="bg-olive px-5 py-20 text-paper sm:px-8 sm:py-28 lg:px-12">
-      <div className="mx-auto max-w-[1360px]">
-        <ScrollReveal className="max-w-5xl" parallaxSpeed={-10}>
-          <p className="mb-6 text-xs uppercase tracking-[0.28em] text-paper/48">Class 2307</p>
-          <div ref={wrapperRef}>
-            {/* Title - nowrap so it stays on one line */}
-            <div className="whitespace-nowrap text-[clamp(1.8rem,6vw,3.6rem)] font-black leading-[1.15] tracking-[-0.03em] text-paper">
-              {titleText.split('').map((ch, i) => (
-                <span key={`t-${i}`} data-char>{ch === ' ' ? '\u00A0' : ch}</span>
-              ))}
-            </div>
+    <>
+      {/* Spacer to maintain layout when section is pinned */}
+      <div ref={spacerRef} style={{ height: 0 }} />
+      <section
+        ref={sectionRef}
+        className="relative flex min-h-dvh items-center justify-center overflow-hidden bg-cinema px-6"
+      >
+      {/* Subtle vignette overlay */}
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background:
+            'radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.3) 100%)',
+        }}
+      />
 
-            {/* Body - poem lines, left-aligned */}
-            <div className="mt-10 text-[clamp(1.4rem,4.5vw,2.8rem)] font-semibold leading-[2] tracking-[-0.02em] text-paper/80">
-              {bodyLines.map((line, li) => (
-                <div key={li} className="leading-[2.2]">
-                  {line.split('').map((ch, ci) => (
-                    <span key={`b-${li}-${ci}`} data-char>{ch === ' ' ? '\u00A0' : ch}</span>
-                  ))}
-                </div>
-              ))}
-            </div>
+      <div className="relative z-10 flex flex-col items-center justify-center gap-y-6 px-4 py-20">
+        {/* Line 0: {name} 毕业快乐 */}
+        <div
+          ref={(el) => { lineRefs.current[0] = el }}
+          className="font-medium tracking-[-0.01em] text-paper/70 text-[clamp(1.4rem,5vw,2.4rem)]"
+        >
+          {titleText}
+        </div>
 
-            {/* Cursor */}
-            <span data-cursor className="inline-block w-[2px] h-[1.1em] bg-paper/80 ml-0.5 align-middle" />
-          </div>
-        </ScrollReveal>
+        {/* Line 1: 此去 */}
+        <div
+          ref={(el) => { lineRefs.current[1] = el }}
+          className="font-light tracking-[0.15em] text-paper/50 text-[clamp(1.4rem,5vw,2.4rem)]"
+        >
+          {poemLines[0]}
+        </div>
+
+        {/* Line 2: 繁花似锦 — emphasis via weight + spacing, not size */}
+        <div
+          ref={(el) => { lineRefs.current[2] = el }}
+          className="font-serif font-semibold tracking-[0.12em] text-paper text-[clamp(1.6rem,5.5vw,2.8rem)]"
+        >
+          {poemLines[1]}
+        </div>
+
+        {/* Line 3: 2307的战友们 */}
+        <div
+          ref={(el) => { lineRefs.current[3] = el }}
+          className="font-light tracking-[0.15em] text-paper/50 text-[clamp(1.4rem,5vw,2.4rem)]"
+        >
+          {poemLines[2]}
+        </div>
+
+        {/* Line 4: 再会 — emotional anchor */}
+        <div
+          ref={(el) => { lineRefs.current[4] = el }}
+          className="font-serif tracking-[0.3em] text-paper/85 text-[clamp(1.4rem,5vw,2.4rem)]"
+        >
+          {poemLines[3]}
+        </div>
       </div>
     </section>
+    </>
   )
 }
 
