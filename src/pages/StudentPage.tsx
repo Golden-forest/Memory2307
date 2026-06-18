@@ -747,7 +747,7 @@ function ClosingSection({ studentName }: { studentName: string }) {
           }
         }
       },
-      { threshold: 0.1 }
+      { threshold: 0.4, rootMargin: '0px 0px -15% 0px' }
     )
     observer.observe(section)
 
