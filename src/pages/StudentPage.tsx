@@ -786,7 +786,7 @@ function ClosingSection({ studentName }: { studentName: string }) {
           {/* Line 0: {name} 毕业快乐 */}
           <div
             ref={(el) => { lineRefs.current[0] = el }}
-            className="font-serif tracking-[0.15em] text-[clamp(1.4rem,5vw,2.4rem)]"
+            className="font-bold tracking-[0.12em] text-[clamp(1.8rem,6vw,3rem)]"
           >
             {titleText}
           </div>
@@ -794,7 +794,7 @@ function ClosingSection({ studentName }: { studentName: string }) {
           {/* Line 1: 此去 */}
           <div
             ref={(el) => { lineRefs.current[1] = el }}
-            className="font-serif tracking-[0.15em] text-[clamp(1.4rem,5vw,2.4rem)]"
+            className="font-bold tracking-[0.12em] text-[clamp(1.8rem,6vw,3rem)]"
           >
             {poemLines[0]}
           </div>
@@ -802,7 +802,7 @@ function ClosingSection({ studentName }: { studentName: string }) {
           {/* Line 2: 繁花似锦 — emphasis via weight */}
           <div
             ref={(el) => { lineRefs.current[2] = el }}
-            className="font-serif font-semibold tracking-[0.15em] text-[clamp(1.4rem,5vw,2.4rem)]"
+            className="font-bold tracking-[0.12em] text-[clamp(1.8rem,6vw,3rem)]"
           >
             {poemLines[1]}
           </div>
@@ -810,7 +810,7 @@ function ClosingSection({ studentName }: { studentName: string }) {
           {/* Line 3: 2307的战友们 */}
           <div
             ref={(el) => { lineRefs.current[3] = el }}
-            className="font-serif tracking-[0.15em] text-[clamp(1.4rem,5vw,2.4rem)]"
+            className="font-bold tracking-[0.12em] text-[clamp(1.8rem,6vw,3rem)]"
           >
             {poemLines[2]}
           </div>
@@ -818,7 +818,7 @@ function ClosingSection({ studentName }: { studentName: string }) {
           {/* Line 4: 再会 — final anchor */}
           <div
             ref={(el) => { lineRefs.current[4] = el }}
-            className="font-serif tracking-[0.15em] text-[clamp(2rem,7vw,3.6rem)]"
+            className="font-bold tracking-[0.12em] text-[clamp(2.6rem,9vw,4.8rem)]"
           >
             {poemLines[3]}
           </div>
