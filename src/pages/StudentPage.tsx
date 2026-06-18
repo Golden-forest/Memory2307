@@ -613,6 +613,7 @@ function ClosingSection({ studentName }: { studentName: string }) {
   const sectionRef = useRef<HTMLElement>(null)
   const spacerRef = useRef<HTMLDivElement>(null)
   const lineRefs = useRef<(HTMLDivElement | null)[]>([])
+  const creditsTrackRef = useRef<HTMLDivElement>(null)
   const tlRef = useRef<gsap.core.Timeline | null>(null)
 
   const titleText = `${studentName} 毕业快乐`
@@ -631,8 +632,8 @@ function ClosingSection({ studentName }: { studentName: string }) {
       return
     }
 
-    // Set initial state
-    gsap.set(lines, { opacity: 0, y: 18, filter: 'blur(8px)' })
+    // Initial state: all lines hidden, ready for sequential fade-in
+    gsap.set(lines, { opacity: 0, y: 25, filter: 'blur(8px)', scale: 1 })
 
     let isPinned = false
     const sectionHeight = section.offsetHeight
@@ -669,69 +670,72 @@ function ClosingSection({ studentName }: { studentName: string }) {
     }
 
     const playAnimation = () => {
-      pin()
       // Kill previous timeline if any
       tlRef.current?.kill()
 
-      // Reset all lines to hidden
-      gsap.set(lines, { opacity: 0, y: 18, filter: 'blur(8px)' })
+      const track = creditsTrackRef.current
+      if (!track) return
 
+      const viewportH = window.innerHeight
+
+      // Measure BEFORE pinning — layout is stable in normal document flow
+      gsap.set(track, { y: 0 })
+      gsap.set(lines, { opacity: 1, y: 0, filter: 'blur(0px)', scale: 1 })
+
+      const parent = track.parentElement!
+      const parentRect = parent.getBoundingClientRect()
+      const line4Rect = lines[4].getBoundingClientRect()
+      const line4CenterFromParent = line4Rect.top - parentRect.top + line4Rect.height / 2
+      const targetTrackY = parentRect.height / 2 - line4CenterFromParent
+
+      // Now pin and set initial animation state
+      pin()
+
+      const startY = viewportH * 0.65
+      gsap.set(track, { y: startY })
+      gsap.set(lines, { opacity: 0, y: 40, filter: 'blur(8px)', scale: 1 })
       const tl = gsap.timeline({
         onComplete: () => {
-          // Animation done — unpin so user can scroll freely
           unpin()
         },
       })
       tlRef.current = tl
 
-      // === Breathing pause (0.5s) ===
-      tl.to({}, { duration: 0.5 })
+      // Breathing pause
+      tl.to({}, { duration: 1.5 })
 
-      // Line 0: {name} 毕业快乐 — 0.8s fade in, 0.6s hold
+      // === Continuous upward scroll (gentle sine curve, not robotic constant speed) ===
+      const scrollDuration = 15.0
+      tl.to(track, {
+        y: targetTrackY,
+        duration: scrollDuration,
+        ease: 'sine.inOut',
+      }, 0)
+
+      // === Lines fade in one by one (power4.out: dramatic deceleration, "settles") ===
       tl.to(lines[0], {
         opacity: 1, y: 0, filter: 'blur(0px)',
-        duration: 0.8, ease: 'power2.out',
-      })
-      tl.to({}, { duration: 0.6 })
+        duration: 2.5, ease: 'power4.out',
+      }, 0)
 
-      // Line 1: 此去 — 0.8s fade in, 0.5s hold
-      tl.to(lines[1], {
-        opacity: 1, y: 0, filter: 'blur(0px)',
-        duration: 0.8, ease: 'power2.out',
-      })
-      tl.to({}, { duration: 0.5 })
+      const fadeInGap = 2.4
+      for (let i = 1; i <= 4; i++) {
+        tl.to(lines[i], {
+          opacity: 1, y: 0, filter: 'blur(0px)',
+          duration: 2.2, ease: 'power4.out',
+        }, fadeInGap * i)
+      }
 
-      // Line 2: 繁花似锦 — 0.9s fade in (slightly longer for emphasis), 0.7s hold
-      tl.to(lines[2], {
-        opacity: 1, y: 0, filter: 'blur(0px)',
-        duration: 0.9, ease: 'power2.out',
-      })
-      tl.to({}, { duration: 0.7 })
+      // === Lines 0-3 fade out (gentle dissolve) ===
+      for (let i = 0; i <= 3; i++) {
+        tl.to(lines[i], {
+          opacity: 0, filter: 'blur(6px)',
+          duration: 1.8, ease: 'power3.in',
+        }, fadeInGap * (i + 2) + 1.5)
+      }
 
-      // Line 3: 2307的战友们 — 0.8s fade in, 0.5s hold
-      tl.to(lines[3], {
-        opacity: 1, y: 0, filter: 'blur(0px)',
-        duration: 0.8, ease: 'power2.out',
-      })
-      tl.to({}, { duration: 0.5 })
-
-      // Line 4: 再会 — 0.8s fade in, 0.8s hold
-      tl.to(lines[4], {
-        opacity: 1, y: 0, filter: 'blur(0px)',
-        duration: 0.8, ease: 'power2.out',
-      })
-      tl.to({}, { duration: 0.8 })
-
-      // Fade out lines 0–3 (1.2s), then unpin
-      tl.to(lines.slice(0, 4), {
-        opacity: 0,
-        y: -4,
-        duration: 1.2,
-        ease: 'power2.inOut',
-        stagger: 0.12,
-      })
-
-      // Line 4 (再会) stays visible as normal page content
+      // Final pause before unpin
+      tl.to({}, { duration: 2.5 })
     }
 
     // Use IntersectionObserver to detect when section enters viewport
@@ -772,45 +776,52 @@ function ClosingSection({ studentName }: { studentName: string }) {
         }}
       />
 
-      <div className="relative z-10 flex flex-col items-center justify-center gap-y-6 px-4 py-20">
-        {/* Line 0: {name} 毕业快乐 */}
+      {/* Clip container — masks text outside viewport, full-screen height */}
+      <div className="relative z-10 h-dvh w-full overflow-hidden">
+        {/* Credits track — positioned via GSAP transform */}
         <div
-          ref={(el) => { lineRefs.current[0] = el }}
-          className="font-medium tracking-[-0.01em] text-paper/70 text-[clamp(1.4rem,5vw,2.4rem)]"
+          ref={creditsTrackRef}
+          className="absolute inset-x-0 top-0 flex flex-col items-center gap-y-8 px-4 text-paper"
         >
-          {titleText}
-        </div>
+          {/* Line 0: {name} 毕业快乐 */}
+          <div
+            ref={(el) => { lineRefs.current[0] = el }}
+            className="font-serif tracking-[0.15em] text-[clamp(1.4rem,5vw,2.4rem)]"
+          >
+            {titleText}
+          </div>
 
-        {/* Line 1: 此去 */}
-        <div
-          ref={(el) => { lineRefs.current[1] = el }}
-          className="font-light tracking-[0.15em] text-paper/50 text-[clamp(1.4rem,5vw,2.4rem)]"
-        >
-          {poemLines[0]}
-        </div>
+          {/* Line 1: 此去 */}
+          <div
+            ref={(el) => { lineRefs.current[1] = el }}
+            className="font-serif tracking-[0.15em] text-[clamp(1.4rem,5vw,2.4rem)]"
+          >
+            {poemLines[0]}
+          </div>
 
-        {/* Line 2: 繁花似锦 — emphasis via weight + spacing, not size */}
-        <div
-          ref={(el) => { lineRefs.current[2] = el }}
-          className="font-serif font-semibold tracking-[0.12em] text-paper text-[clamp(1.6rem,5.5vw,2.8rem)]"
-        >
-          {poemLines[1]}
-        </div>
+          {/* Line 2: 繁花似锦 — emphasis via weight */}
+          <div
+            ref={(el) => { lineRefs.current[2] = el }}
+            className="font-serif font-semibold tracking-[0.15em] text-[clamp(1.4rem,5vw,2.4rem)]"
+          >
+            {poemLines[1]}
+          </div>
 
-        {/* Line 3: 2307的战友们 */}
-        <div
-          ref={(el) => { lineRefs.current[3] = el }}
-          className="font-light tracking-[0.15em] text-paper/50 text-[clamp(1.4rem,5vw,2.4rem)]"
-        >
-          {poemLines[2]}
-        </div>
+          {/* Line 3: 2307的战友们 */}
+          <div
+            ref={(el) => { lineRefs.current[3] = el }}
+            className="font-serif tracking-[0.15em] text-[clamp(1.4rem,5vw,2.4rem)]"
+          >
+            {poemLines[2]}
+          </div>
 
-        {/* Line 4: 再会 — emotional anchor */}
-        <div
-          ref={(el) => { lineRefs.current[4] = el }}
-          className="font-serif tracking-[0.3em] text-paper/85 text-[clamp(1.4rem,5vw,2.4rem)]"
-        >
-          {poemLines[3]}
+          {/* Line 4: 再会 — final anchor */}
+          <div
+            ref={(el) => { lineRefs.current[4] = el }}
+            className="font-serif tracking-[0.15em] text-[clamp(2rem,7vw,3.6rem)]"
+          >
+            {poemLines[3]}
+          </div>
         </div>
       </div>
     </section>
