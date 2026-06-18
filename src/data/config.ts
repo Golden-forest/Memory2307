@@ -63,7 +63,7 @@ export const siteConfig: SiteConfig = {
       title: '向明天出发',
       body: '愿你们有敢赴山海的勇气，也有在平凡日子里发光的能力。',
       author: '写给未来的你们',
-      photoIndex: 7,
+      photoIndex: 8,
     },
   ],
   closing: {
