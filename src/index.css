@@ -45,6 +45,11 @@ button {
   font: inherit;
 }
 
+@keyframes loaderDot {
+  0%, 80%, 100% { transform: scale(.4); opacity: .3 }
+  40% { transform: scale(1); opacity: 1 }
+}
+
 @keyframes heroIntro {
   from {
     opacity: 0;
