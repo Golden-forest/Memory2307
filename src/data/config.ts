@@ -25,6 +25,8 @@ export interface MessageConfig {
 
 export interface ClosingConfig {
   lines: string[]
+  greetingLine: string
+  closingLine: string
 }
 
 export interface SiteConfig {
@@ -68,5 +70,7 @@ export const siteConfig: SiteConfig = {
   ],
   closing: {
     lines: ['此去', '繁花似锦', '2307的战友们', '再会'],
+    greetingLine: '祝',
+    closingLine: '毕业快乐',
   },
 }

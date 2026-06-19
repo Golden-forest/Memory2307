@@ -616,8 +616,13 @@ function ClosingSection({ studentName }: { studentName: string }) {
   const creditsTrackRef = useRef<HTMLDivElement>(null)
   const tlRef = useRef<gsap.core.Timeline | null>(null)
 
-  const titleText = `${studentName} 毕业快乐`
   const poemLines = siteConfig.closing.lines
+  const allLines = [
+    siteConfig.closing.greetingLine,
+    studentName,
+    siteConfig.closing.closingLine,
+    ...poemLines,
+  ]
 
   useEffect(() => {
     const section = sectionRef.current
@@ -684,9 +689,9 @@ function ClosingSection({ studentName }: { studentName: string }) {
 
       const parent = track.parentElement!
       const parentRect = parent.getBoundingClientRect()
-      const line4Rect = lines[4].getBoundingClientRect()
-      const line4CenterFromParent = line4Rect.top - parentRect.top + line4Rect.height / 2
-      const targetTrackY = parentRect.height / 2 - line4CenterFromParent
+      const lastLineRect = lines[lines.length - 1].getBoundingClientRect()
+      const lastLineCenterFromParent = lastLineRect.top - parentRect.top + lastLineRect.height / 2
+      const targetTrackY = parentRect.height / 2 - lastLineCenterFromParent
 
       // Now pin and set initial animation state
       pin()
@@ -718,16 +723,16 @@ function ClosingSection({ studentName }: { studentName: string }) {
         duration: 2.5, ease: 'power4.out',
       }, 0)
 
-      const fadeInGap = 2.4
-      for (let i = 1; i <= 4; i++) {
+      const fadeInGap = 2.0
+      for (let i = 1; i <= lines.length - 1; i++) {
         tl.to(lines[i], {
           opacity: 1, y: 0, filter: 'blur(0px)',
           duration: 2.2, ease: 'power4.out',
         }, fadeInGap * i)
       }
 
-      // === Lines 0-3 fade out (gentle dissolve) ===
-      for (let i = 0; i <= 3; i++) {
+      // === Lines 0-5 fade out (gentle dissolve) ===
+      for (let i = 0; i <= lines.length - 2; i++) {
         tl.to(lines[i], {
           opacity: 0, filter: 'blur(6px)',
           duration: 1.8, ease: 'power3.in',
@@ -757,7 +762,7 @@ function ClosingSection({ studentName }: { studentName: string }) {
       unpin()
       gsap.set(lines, { clearProps: 'all' })
     }
-  }, [studentName])
+  }, [studentName, allLines])
 
   return (
     <>
@@ -765,7 +770,8 @@ function ClosingSection({ studentName }: { studentName: string }) {
       <div ref={spacerRef} style={{ height: 0 }} />
       <section
         ref={sectionRef}
-        className="relative flex min-h-dvh items-center justify-center overflow-hidden bg-cinema px-6"
+        className="relative flex min-h-dvh items-center justify-center overflow-hidden px-6"
+        style={{ background: '#1a2e1a' }}
       >
       {/* Subtle vignette overlay */}
       <div
@@ -783,45 +789,18 @@ function ClosingSection({ studentName }: { studentName: string }) {
           ref={creditsTrackRef}
           className="absolute inset-x-0 top-0 flex flex-col items-center gap-y-8 px-4 text-paper"
         >
-          {/* Line 0: {name} 毕业快乐 */}
-          <div
-            ref={(el) => { lineRefs.current[0] = el }}
-            className="font-bold tracking-[0.12em] text-[clamp(1.8rem,6vw,3rem)]"
-          >
-            {titleText}
-          </div>
-
-          {/* Line 1: 此去 */}
-          <div
-            ref={(el) => { lineRefs.current[1] = el }}
-            className="font-bold tracking-[0.12em] text-[clamp(1.8rem,6vw,3rem)]"
-          >
-            {poemLines[0]}
-          </div>
-
-          {/* Line 2: 繁花似锦 — emphasis via weight */}
-          <div
-            ref={(el) => { lineRefs.current[2] = el }}
-            className="font-bold tracking-[0.12em] text-[clamp(1.8rem,6vw,3rem)]"
-          >
-            {poemLines[1]}
-          </div>
-
-          {/* Line 3: 2307的战友们 */}
-          <div
-            ref={(el) => { lineRefs.current[3] = el }}
-            className="font-bold tracking-[0.12em] text-[clamp(1.8rem,6vw,3rem)]"
-          >
-            {poemLines[2]}
-          </div>
-
-          {/* Line 4: 再会 — final anchor */}
-          <div
-            ref={(el) => { lineRefs.current[4] = el }}
-            className="font-bold tracking-[0.12em] text-[clamp(2.6rem,9vw,4.8rem)]"
-          >
-            {poemLines[3]}
-          </div>
+          {allLines.map((text, i) => {
+            const isLast = i === allLines.length - 1
+            return (
+              <div
+                key={i}
+                ref={(el) => { lineRefs.current[i] = el }}
+                className={`font-bold tracking-[0.12em] ${isLast ? 'text-[clamp(4rem,14vw,10.5rem)]' : 'text-[clamp(3rem,11.5vw,8.4rem)]'}`}
+              >
+                {text}
+              </div>
+            )
+          })}
         </div>
       </div>
     </section>
