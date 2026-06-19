@@ -615,6 +615,7 @@ function ClosingSection({ studentName }: { studentName: string }) {
   const lineRefs = useRef<(HTMLDivElement | null)[]>([])
   const creditsTrackRef = useRef<HTMLDivElement>(null)
   const tlRef = useRef<gsap.core.Timeline | null>(null)
+  const hasPlayed = useRef(false)
 
   const poemLines = siteConfig.closing.lines
   const allLines = [
@@ -701,7 +702,13 @@ function ClosingSection({ studentName }: { studentName: string }) {
       gsap.set(lines, { opacity: 0, y: 40, filter: 'blur(8px)', scale: 1 })
       const tl = gsap.timeline({
         onComplete: () => {
+          hasPlayed.current = true
+          observer.disconnect()
+          // Unpin so user can scroll freely, then clamp scroll to bottom
           unpin()
+          void document.documentElement.offsetHeight
+          const maxScroll = document.documentElement.scrollHeight - window.innerHeight
+          window.scrollTo(0, Math.max(0, maxScroll))
         },
       })
       tlRef.current = tl
@@ -747,12 +754,12 @@ function ClosingSection({ studentName }: { studentName: string }) {
     const observer = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) {
-          if (entry.isIntersecting) {
+          if (entry.isIntersecting && !hasPlayed.current) {
             playAnimation()
           }
         }
       },
-      { threshold: 0.4, rootMargin: '0px 0px -15% 0px' }
+      { threshold: 0.99 }
     )
     observer.observe(section)
 
@@ -781,6 +788,11 @@ function ClosingSection({ studentName }: { studentName: string }) {
             'radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.3) 100%)',
         }}
       />
+
+      {/* Breathing ambient glow effects */}
+      <div className="ambient-glow" style={{ width: '60vw', height: '60vw', top: '10%', left: '-10%', background: 'radial-gradient(circle, rgba(220,245,220,0.45) 0%, transparent 70%)', filter: 'blur(25px)', animationDelay: '0s' }} />
+      <div className="ambient-glow" style={{ width: '50vw', height: '50vw', bottom: '5%', right: '-10%', background: 'radial-gradient(circle, rgba(240,215,160,0.35) 0%, transparent 70%)', filter: 'blur(30px)', animationDelay: '-4s' }} />
+      <div className="ambient-glow" style={{ width: '35vw', height: '35vw', top: '45%', left: '30%', background: 'radial-gradient(circle, rgba(180,230,210,0.3) 0%, transparent 70%)', filter: 'blur(28px)', animationDelay: '-2s' }} />
 
       {/* Clip container — masks text outside viewport, full-screen height */}
       <div className="relative z-10 h-dvh w-full overflow-hidden">
